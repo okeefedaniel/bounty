@@ -102,7 +102,7 @@
                 <div class="col-6">
                     <form method="post" action="{% url 'core:demo-login' %}">
                         {% csrf_token %}
-                        <input type="hidden" name="username" value="coordinator">
+                        <input type="hidden" name="role" value="coordinator">
                         <button type="submit" class="btn btn-outline-primary btn-sm w-100">
                             <i class="bi bi-bookmark-star me-1"></i>Coordinator
                         </button>
@@ -111,7 +111,7 @@
                 <div class="col-6">
                     <form method="post" action="{% url 'core:demo-login' %}">
                         {% csrf_token %}
-                        <input type="hidden" name="username" value="analyst">
+                        <input type="hidden" name="role" value="analyst">
                         <button type="submit" class="btn btn-outline-success btn-sm w-100">
                             <i class="bi bi-graph-up me-1"></i>Analyst
                         </button>
@@ -120,7 +120,7 @@
                 <div class="col-6">
                     <form method="post" action="{% url 'core:demo-login' %}">
                         {% csrf_token %}
-                        <input type="hidden" name="username" value="viewer">
+                        <input type="hidden" name="role" value="viewer">
                         <button type="submit" class="btn btn-outline-warning btn-sm w-100">
                             <i class="bi bi-eye me-1"></i>Viewer
                         </button>
@@ -129,7 +129,7 @@
                 <div class="col-6">
                     <form method="post" action="{% url 'core:demo-login' %}">
                         {% csrf_token %}
-                        <input type="hidden" name="username" value="admin">
+                        <input type="hidden" name="role" value="admin">
                         <button type="submit" class="btn btn-outline-dark btn-sm w-100">
                             <i class="bi bi-shield-lock me-1"></i>Admin
                         </button>

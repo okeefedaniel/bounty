@@ -21,6 +21,7 @@ if not SECRET_KEY:
         raise ImproperlyConfigured('DJANGO_SECRET_KEY must be set in production')
 
 DEMO_MODE = os.environ.get('DEMO_MODE', 'False').lower() in ('true', '1', 'yes')
+DEMO_ROLES = ['coordinator', 'analyst', 'viewer', 'admin']
 
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
