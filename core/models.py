@@ -86,7 +86,7 @@ class User(AbstractUser):
 
     @property
     def has_ai_access(self):
-        return bool(self.anthropic_api_key)
+        return bool(self.anthropic_api_key) or bool(getattr(settings, 'ANTHROPIC_API_KEY', ''))
 
 
 class AuditLog(AbstractAuditLog):

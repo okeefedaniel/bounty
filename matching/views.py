@@ -26,7 +26,7 @@ class MatchPreferenceView(LoginRequiredMixin, UpdateView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not request.user.has_ai_access:
-            messages.info(request, _('Please add your Anthropic API key in your profile settings.'))
+            messages.info(request, _('AI matching is not configured. Contact your administrator.'))
             return redirect('dashboard')
         return super().dispatch(request, *args, **kwargs)
 

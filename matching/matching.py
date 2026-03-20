@@ -66,7 +66,7 @@ def build_opportunity_summary(opportunity):
 
 def score_opportunity(preference, opportunity):
     """Call the Claude API to score an opportunity against user preferences."""
-    api_key = preference.user.get_anthropic_api_key()
+    api_key = preference.user.get_anthropic_api_key() or getattr(settings, 'ANTHROPIC_API_KEY', '')
     if not api_key:
         logger.warning('No API key for user %s — skipping AI scoring', preference.user)
         return None
@@ -128,7 +128,7 @@ def run_matching_for_user(user):
     from matching.models import MatchPreference, OpportunityMatch
     from opportunities.models import FederalOpportunity
 
-    if not getattr(user, 'anthropic_api_key', ''):
+    if not getattr(user, 'anthropic_api_key', '') and not getattr(settings, 'ANTHROPIC_API_KEY', ''):
         return {'scored': 0, 'stored': 0, 'notified': 0}
 
     min_score = getattr(settings, 'GRANT_MATCH_MIN_SCORE', 60)
