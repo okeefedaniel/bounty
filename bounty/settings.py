@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     # Keel (DockLabs shared platform)
     'keel.core',
     'keel.security',
+    'keel.notifications',
     # Third party
     'rest_framework',
     'crispy_forms',
@@ -292,6 +293,9 @@ MFA_PASSKEY_LOGIN_ENABLED = True
 # Keel
 KEEL_PRODUCT_NAME = 'Bounty'
 KEEL_AUDIT_LOG_MODEL = 'core.AuditLog'
+KEEL_NOTIFICATION_MODEL = 'core.Notification'
+KEEL_NOTIFICATION_PREFERENCE_MODEL = 'core.NotificationPreference'
+KEEL_NOTIFICATION_LOG_MODEL = 'core.NotificationLog'
 KEEL_CSP_POLICY = {}
 
 # Site

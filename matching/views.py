@@ -11,9 +11,9 @@ from django.views.generic import ListView, UpdateView
 from core.mixins import CoordinatorRequiredMixin
 from opportunities.models import TrackedOpportunity
 
-from .forms import MatchPreferenceForm
+from .forms import MatchPreferenceForm, StatePreferenceForm
 from .matching import run_matching_async
-from .models import MatchPreference, OpportunityMatch
+from .models import MatchPreference, OpportunityMatch, StatePreference
 
 
 class MatchPreferenceView(LoginRequiredMixin, UpdateView):
@@ -141,3 +141,24 @@ class MatchFeedbackView(LoginRequiredMixin, View):
         messages.success(request, _('Feedback recorded. Thank you!'))
         next_url = request.POST.get('next', '')
         return redirect(next_url or reverse('matching:recommendations'))
+
+
+class StatePreferenceView(CoordinatorRequiredMixin, UpdateView):
+    """Create or update state-wide matching preferences (coordinator/admin only)."""
+
+    model = StatePreference
+    form_class = StatePreferenceForm
+    template_name = 'matching/state_preferences.html'
+    success_url = reverse_lazy('matching:state-preferences')
+
+    def get_object(self, queryset=None):
+        obj = StatePreference.get_active()
+        if obj is None:
+            obj = StatePreference.objects.create(created_by=self.request.user)
+        return obj
+
+    def form_valid(self, form):
+        form.instance.created_by = form.instance.created_by or self.request.user
+        response = super().form_valid(form)
+        messages.success(self.request, _('State-wide preferences saved.'))
+        return response

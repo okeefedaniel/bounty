@@ -5,23 +5,81 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
-class MatchPreference(models.Model):
-    """User preferences for AI-powered federal grant matching."""
+class FocusArea(models.TextChoices):
+    """Shared focus area choices for both state and user preferences."""
+    EDUCATION = 'education', _('Education')
+    HEALTH = 'health', _('Health & Human Services')
+    ENVIRONMENT = 'environment', _('Environment & Energy')
+    INFRASTRUCTURE = 'infrastructure', _('Infrastructure & Transportation')
+    PUBLIC_SAFETY = 'public_safety', _('Public Safety')
+    HOUSING = 'housing', _('Housing & Community Development')
+    ECONOMIC_DEV = 'economic_dev', _('Economic Development')
+    ARTS_CULTURE = 'arts_culture', _('Arts & Culture')
+    TECHNOLOGY = 'technology', _('Technology & Innovation')
+    AGRICULTURE = 'agriculture', _('Agriculture & Food')
+    WORKFORCE = 'workforce', _('Workforce Development')
+    JUSTICE = 'justice', _('Justice & Legal Services')
+    OTHER = 'other', _('Other')
 
-    class FocusArea(models.TextChoices):
-        EDUCATION = 'education', _('Education')
-        HEALTH = 'health', _('Health & Human Services')
-        ENVIRONMENT = 'environment', _('Environment & Energy')
-        INFRASTRUCTURE = 'infrastructure', _('Infrastructure & Transportation')
-        PUBLIC_SAFETY = 'public_safety', _('Public Safety')
-        HOUSING = 'housing', _('Housing & Community Development')
-        ECONOMIC_DEV = 'economic_dev', _('Economic Development')
-        ARTS_CULTURE = 'arts_culture', _('Arts & Culture')
-        TECHNOLOGY = 'technology', _('Technology & Innovation')
-        AGRICULTURE = 'agriculture', _('Agriculture & Food')
-        WORKFORCE = 'workforce', _('Workforce Development')
-        JUSTICE = 'justice', _('Justice & Legal Services')
-        OTHER = 'other', _('Other')
+
+class StatePreference(models.Model):
+    """State-wide matching preferences set by admin or coordinator.
+
+    Acts as a baseline — all users inherit these when AI matching runs.
+    Only one active StatePreference should exist at a time.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(
+        max_length=200, default='State Matching Profile',
+        help_text=_('Label for this state-wide preference set'),
+    )
+    focus_areas = models.JSONField(default=list, blank=True)
+    keywords = models.JSONField(
+        default=list, blank=True,
+        help_text=_('Keywords that describe state-wide priorities'),
+    )
+    funding_range_min = models.DecimalField(
+        max_digits=15, decimal_places=2, null=True, blank=True,
+    )
+    funding_range_max = models.DecimalField(
+        max_digits=15, decimal_places=2, null=True, blank=True,
+    )
+    description = models.TextField(
+        blank=True, default='',
+        help_text=_('Describe the state\'s overall funding priorities and mission'),
+    )
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, related_name='created_state_preferences',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+        verbose_name = _('State Preference')
+        verbose_name_plural = _('State Preferences')
+
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def get_active(cls):
+        """Return the active state preference, or None."""
+        return cls.objects.filter(is_active=True).first()
+
+
+class MatchPreference(models.Model):
+    """User-level preferences for AI-powered federal grant matching."""
+
+    class DigestFrequency(models.TextChoices):
+        NONE = 'none', _('No digest')
+        DAILY = 'daily', _('Daily')
+        WEEKLY = 'weekly', _('Weekly')
+
+    FocusArea = FocusArea
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(
@@ -29,6 +87,10 @@ class MatchPreference(models.Model):
         related_name='match_preference',
     )
     focus_areas = models.JSONField(default=list, blank=True)
+    keywords = models.JSONField(
+        default=list, blank=True,
+        help_text=_('Keywords that describe your personal priorities'),
+    )
     funding_range_min = models.DecimalField(
         max_digits=15, decimal_places=2, null=True, blank=True,
     )
@@ -36,6 +98,16 @@ class MatchPreference(models.Model):
         max_digits=15, decimal_places=2, null=True, blank=True,
     )
     description = models.TextField(blank=True, default='')
+    digest_frequency = models.CharField(
+        max_length=10,
+        choices=DigestFrequency.choices,
+        default=DigestFrequency.WEEKLY,
+        help_text=_('How often to receive a summary of new matches'),
+    )
+    last_digest_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text=_('When the last digest email was sent'),
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

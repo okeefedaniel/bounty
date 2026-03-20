@@ -27,6 +27,9 @@ urlpatterns = [
     # Tracked opportunities (coordinator pipeline)
     path('tracked/', include('opportunities.urls')),
 
+    # Notifications
+    path('notifications/', include('keel.notifications.urls')),
+
     # AI matching
     path('matching/', include('matching.urls')),
 

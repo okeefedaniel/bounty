@@ -67,7 +67,11 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="{% url 'matching:recommendations' %}"><i class="bi bi-lightbulb me-2"></i>{% trans "Recommendations" %}</a></li>
-                                <li><a class="dropdown-item" href="{% url 'matching:preferences' %}"><i class="bi bi-gear me-2"></i>{% trans "Preferences" %}</a></li>
+                                <li><a class="dropdown-item" href="{% url 'matching:preferences' %}"><i class="bi bi-gear me-2"></i>{% trans "My Preferences" %}</a></li>
+                                {% if user.is_coordinator %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'matching:state-preferences' %}"><i class="bi bi-building me-2"></i>{% trans "State Preferences" %}</a></li>
+                                {% endif %}
                             </ul>
                         </li>
                         {% endif %}
@@ -75,6 +79,16 @@
                 </ul>
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" href="{% url 'keel_notifications:list' %}" aria-label="{% trans 'Notifications' %}">
+                                <i class="bi bi-bell"></i>
+                                {% if unread_notification_count %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: .6rem;">
+                                    {{ unread_notification_count }}
+                                </span>
+                                {% endif %}
+                            </a>
+                        </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle me-1"></i>{{ user.get_full_name|default:user.username }}

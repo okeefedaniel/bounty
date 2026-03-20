@@ -17,9 +17,9 @@ MODEL = 'claude-sonnet-4-20250514'
 MAX_TOKENS = 250
 
 
-def build_preference_context(preference):
-    """Format a MatchPreference into a text block for the AI prompt."""
-    from matching.models import MatchPreference
+def build_preference_context(preference, state_preference=None):
+    """Format merged state + user preferences into a text block for the AI prompt."""
+    from matching.models import FocusArea
 
     user = preference.user
     parts = []
@@ -27,18 +27,46 @@ def build_preference_context(preference):
     if user.organization_name:
         parts.append(f"Organization: {user.organization_name}")
 
-    if preference.focus_areas:
-        area_labels = dict(MatchPreference.FocusArea.choices)
-        areas = [str(area_labels.get(a, a)) for a in preference.focus_areas]
+    # Merge focus areas: state-wide + user-level
+    all_focus_areas = set(preference.focus_areas or [])
+    if state_preference and state_preference.focus_areas:
+        all_focus_areas.update(state_preference.focus_areas)
+
+    if all_focus_areas:
+        area_labels = dict(FocusArea.choices)
+        areas = [str(area_labels.get(a, a)) for a in sorted(all_focus_areas)]
         parts.append(f"Focus Areas: {', '.join(areas)}")
 
-    if preference.funding_range_min or preference.funding_range_max:
-        low = f"${preference.funding_range_min:,.0f}" if preference.funding_range_min else "any"
-        high = f"${preference.funding_range_max:,.0f}" if preference.funding_range_max else "any"
+    # Merge keywords: state-wide + user-level
+    all_keywords = list(preference.keywords or [])
+    if state_preference and state_preference.keywords:
+        all_keywords = list(state_preference.keywords) + all_keywords
+    if all_keywords:
+        unique_keywords = list(dict.fromkeys(all_keywords))  # dedupe preserving order
+        parts.append(f"Keywords: {', '.join(unique_keywords)}")
+
+    # Funding range: use user override if set, else fall back to state
+    funding_min = preference.funding_range_min
+    funding_max = preference.funding_range_max
+    if state_preference:
+        if not funding_min and state_preference.funding_range_min:
+            funding_min = state_preference.funding_range_min
+        if not funding_max and state_preference.funding_range_max:
+            funding_max = state_preference.funding_range_max
+
+    if funding_min or funding_max:
+        low = f"${funding_min:,.0f}" if funding_min else "any"
+        high = f"${funding_max:,.0f}" if funding_max else "any"
         parts.append(f"Funding Range: {low} – {high}")
 
+    # Merge descriptions
+    descriptions = []
+    if state_preference and state_preference.description:
+        descriptions.append(f"State Priorities: {state_preference.description}")
     if preference.description:
-        parts.append(f"Description: {preference.description}")
+        descriptions.append(f"User Priorities: {preference.description}")
+    if descriptions:
+        parts.extend(descriptions)
 
     return '\n'.join(parts)
 
@@ -64,7 +92,7 @@ def build_opportunity_summary(opportunity):
     return '\n'.join(parts)
 
 
-def score_opportunity(preference, opportunity):
+def score_opportunity(preference, opportunity, state_preference=None):
     """Call the Claude API to score an opportunity against user preferences."""
     api_key = preference.user.get_anthropic_api_key() or getattr(settings, 'ANTHROPIC_API_KEY', '')
     if not api_key:
@@ -77,7 +105,7 @@ def score_opportunity(preference, opportunity):
         logger.error('anthropic package not installed')
         return None
 
-    pref_context = build_preference_context(preference)
+    pref_context = build_preference_context(preference, state_preference)
     opp_summary = build_opportunity_summary(opportunity)
 
     system = (
@@ -124,8 +152,8 @@ def score_opportunity(preference, opportunity):
 
 def run_matching_for_user(user):
     """Score open federal opportunities against user's active preferences."""
-    from core.notifications import build_absolute_url, create_notification, send_notification_email
-    from matching.models import MatchPreference, OpportunityMatch
+    from keel.notifications import notify
+    from matching.models import MatchPreference, OpportunityMatch, StatePreference
     from opportunities.models import FederalOpportunity
 
     if not getattr(user, 'anthropic_api_key', '') and not getattr(settings, 'ANTHROPIC_API_KEY', ''):
@@ -133,11 +161,15 @@ def run_matching_for_user(user):
 
     min_score = getattr(settings, 'GRANT_MATCH_MIN_SCORE', 60)
     notify_score = getattr(settings, 'GRANT_MATCH_NOTIFY_SCORE', 75)
+    high_score = getattr(settings, 'GRANT_MATCH_HIGH_SCORE', 90)
 
     try:
         pref = MatchPreference.objects.select_related('user').get(user=user, is_active=True)
     except MatchPreference.DoesNotExist:
         return {'scored': 0, 'stored': 0, 'notified': 0}
+
+    # Load state-wide preferences (merged into AI context)
+    state_pref = StatePreference.get_active()
 
     federal_opps = list(
         FederalOpportunity.objects.filter(
@@ -156,7 +188,7 @@ def run_matching_for_user(user):
         if opp.pk in existing_ids:
             continue
 
-        result = score_opportunity(pref, opp)
+        result = score_opportunity(pref, opp, state_preference=state_pref)
         scored += 1
 
         if result is None:
@@ -180,29 +212,24 @@ def run_matching_for_user(user):
             title_text = match_obj.opportunity_title
             opp_url = match_obj.opportunity_url
 
-            create_notification(
-                recipient=user,
+            # Choose event type based on score
+            event = 'grant_match_high_score' if score >= high_score else 'grant_match_found'
+
+            notify(
+                event=event,
+                recipients=[user],
                 title='New Grant Recommendation',
                 message=f'We found a {score}% match: "{title_text[:80]}". {explanation[:120]}',
                 link=opp_url,
-                priority='medium',
+                priority='high' if score >= high_score else 'medium',
+                context={
+                    'user': user,
+                    'match': match_obj,
+                    'title': title_text,
+                    'score': score,
+                    'explanation': explanation,
+                },
             )
-
-            if user.email:
-                detail_url = build_absolute_url(opp_url)
-                send_notification_email(
-                    recipient_email=user.email,
-                    subject=f'Grant Recommendation: {title_text[:60]}',
-                    template_name='emails/grant_match.html',
-                    context={
-                        'user': user,
-                        'match': match_obj,
-                        'title': title_text,
-                        'score': score,
-                        'explanation': explanation,
-                        'detail_url': detail_url,
-                    },
-                )
 
             match_obj.notified = True
             match_obj.notified_at = timezone.now()

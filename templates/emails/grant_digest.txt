@@ -1,0 +1,29 @@
+{% load i18n %}{% trans "Bounty" %}
+{% trans "Federal Funds Discovery" %}
+
+---
+
+{% if frequency == 'daily' %}{% trans "YOUR DAILY MATCH DIGEST" %}{% else %}{% trans "YOUR WEEKLY MATCH DIGEST" %}{% endif %}
+
+{% blocktrans with name=user.get_full_name|default:user.username %}Hello {{ name }},{% endblocktrans %}
+
+{% blocktrans with count=matches|length %}We found {{ count }} new federal funding opportunities that match your preferences since your last update.{% endblocktrans %}
+
+{% for match in matches %}
+---
+{% trans "Opportunity" %}: {{ match.federal_opportunity.title }}
+{% trans "Agency" %}: {{ match.federal_opportunity.agency_name }}
+{% trans "Score" %}: {{ match.relevance_score }}%
+{% trans "Why" %}: {{ match.explanation }}
+{% endfor %}
+
+---
+
+{% trans "View All Recommendations" %}: {{ recommendations_url }}
+
+{% trans "You can change your digest frequency or disable it from your matching preferences." %}
+
+---
+
+{% trans "This is an automated message from Bounty. Do not reply directly." %}
+{% trans "Powered by DockLabs" %}

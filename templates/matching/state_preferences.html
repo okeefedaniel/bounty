@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "State Preferences" %}{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="bg-light border-bottom">
+    <div class="container">
+        <ol class="breadcrumb mb-0 py-2">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">{% trans "Dashboard" %}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'matching:recommendations' %}">{% trans "AI Matching" %}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{% trans "State Preferences" %}</li>
+        </ol>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1"><i class="bi bi-building me-2"></i>{% trans "State-Wide Matching Preferences" %}</h2>
+        <p class="text-muted mb-0">
+            {% trans "Set state-wide priorities that apply to all users' AI matching. Individual users can add their own preferences on top of these." %}
+        </p>
+    </div>
+    <a href="{% url 'matching:preferences' %}" class="btn btn-outline-primary">
+        <i class="bi bi-person-gear me-1"></i>{% trans "My Preferences" %}
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                {% crispy form %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card bg-light border-0">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-info-circle me-2"></i>{% trans "Two-Tier Matching" %}</h5>
+                <p class="mb-2">{% trans "Bounty uses a two-tier preference system:" %}</p>
+                <ul class="mb-0">
+                    <li class="mb-2">
+                        <strong>{% trans "State Preferences" %}</strong> (this page) —
+                        {% trans "Set by coordinators and admins. These apply to all users and define the state's overall funding priorities." %}
+                    </li>
+                    <li>
+                        <strong>{% trans "User Preferences" %}</strong> —
+                        {% trans "Each user can add their own focus areas, keywords, and context on top of the state profile." %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        {% if object.updated_at %}
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6 class="card-title text-muted"><i class="bi bi-clock-history me-2"></i>{% trans "Status" %}</h6>
+                <p class="mb-1">
+                    {% if object.is_active %}
+                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>{% trans "Active" %}</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{% trans "Inactive" %}</span>
+                    {% endif %}
+                </p>
+                <small class="text-muted">
+                    {% trans "Last updated:" %} {{ object.updated_at|date:"M d, Y g:i A" }}
+                </small>
+                {% if object.created_by %}
+                <br>
+                <small class="text-muted">
+                    {% trans "By:" %} {{ object.created_by.get_full_name|default:object.created_by.username }}
+                </small>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

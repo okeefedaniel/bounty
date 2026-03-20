@@ -1,0 +1,66 @@
+{% load i18n %}<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4;">
+    <!-- Header -->
+    <div style="background-color: #00457C; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0; font-size: 24px; font-weight: 600;">{% trans "Bounty" %}</h1>
+        <p style="margin: 5px 0 0; font-size: 14px; opacity: 0.9;">{% trans "Federal Funds Discovery" %}</p>
+    </div>
+
+    <!-- Body -->
+    <div style="padding: 30px; background: #ffffff; border: 1px solid #e0e0e0; border-top: none;">
+        <h2 style="color: #00457C; margin-top: 0; font-size: 20px;">
+            <span style="font-size: 24px;">&#x1f4cb;</span>
+            {% if frequency == 'daily' %}{% trans "Your Daily Match Digest" %}{% else %}{% trans "Your Weekly Match Digest" %}{% endif %}
+        </h2>
+
+        {% blocktrans with name=user.get_full_name|default:user.username %}<p>Hello {{ name }},</p>{% endblocktrans %}
+
+        {% blocktrans with count=matches|length %}
+        <p>We found <strong>{{ count }}</strong> new federal funding opportunities that match your preferences since your last update.</p>
+        {% endblocktrans %}
+
+        {% for match in matches %}
+        <table style="width: 100%; border-collapse: collapse; margin: 15px 0; border: 1px solid #e0e0e0; border-radius: 6px;">
+            <tr style="background-color: #f8f9fa;">
+                <td colspan="2" style="padding: 12px; font-weight: 600; color: #00457C; font-size: 15px; border-bottom: 1px solid #e0e0e0;">
+                    {{ match.federal_opportunity.title|truncatechars:100 }}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 12px; font-weight: bold; color: #555; width: 30%; border-bottom: 1px solid #eee;">{% trans "Agency" %}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #eee;">{{ match.federal_opportunity.agency_name }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 12px; font-weight: bold; color: #555; border-bottom: 1px solid #eee;">{% trans "Score" %}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #eee;">
+                    <strong style="color: {% if match.relevance_score >= 85 %}#28a745{% elif match.relevance_score >= 70 %}#ffc107{% else %}#6c757d{% endif %};">{{ match.relevance_score }}%</strong>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 8px 12px; font-weight: bold; color: #555;">{% trans "Why" %}</td>
+                <td style="padding: 8px 12px;">{{ match.explanation|truncatechars:150 }}</td>
+            </tr>
+        </table>
+        {% endfor %}
+
+        <p style="text-align: center; margin: 25px 0;">
+            <a href="{{ recommendations_url }}"
+               style="display: inline-block; background-color: #00457C; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px;">
+                {% trans "View All Recommendations" %}
+            </a>
+        </p>
+
+        <p style="font-size: 13px; color: #888;">
+            {% trans "You can change your digest frequency or disable it from your matching preferences." %}
+        </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="padding: 20px; text-align: center; font-size: 12px; color: #888; border-radius: 0 0 8px 8px;">
+        <p style="margin: 0 0 5px;">{% trans "This is an automated message from Bounty. Do not reply directly." %}</p>
+        <p style="margin: 0;">{% trans "Powered by DockLabs" %}</p>
+    </div>
+</body>
+</html>
