@@ -75,7 +75,7 @@ class FederalOpportunity(models.Model):
         help_text=_('ID of linked GrantProgram in Harbor (set after push)'),
     )
 
-    synced_at = models.DateTimeField(auto_now_add=True)
+    synced_at = models.DateTimeField(auto_now=True)
     raw_data = models.JSONField(default=dict, blank=True)
 
     class Meta:

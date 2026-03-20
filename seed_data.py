@@ -277,8 +277,8 @@ MatchPreference.objects.get_or_create(
             'Environmental Remediation', 'Infrastructure',
             'Housing', 'Economic Development', 'Disaster Recovery',
         ],
-        min_funding=Decimal('100000'),
-        max_funding=Decimal('50000000'),
+        funding_range_min=Decimal('100000'),
+        funding_range_max=Decimal('50000000'),
         description=(
             "State government seeking federal funding for environmental cleanup, "
             "infrastructure improvements, housing programs, and disaster recovery "
@@ -296,8 +296,8 @@ MatchPreference.objects.get_or_create(
             'Education', 'Youth Development', 'STEM',
             'Workforce Development',
         ],
-        min_funding=Decimal('50000'),
-        max_funding=Decimal('5000000'),
+        funding_range_min=Decimal('50000'),
+        funding_range_max=Decimal('5000000'),
         description=(
             "Researching federal funding opportunities in education and "
             "workforce development for state agency partners."

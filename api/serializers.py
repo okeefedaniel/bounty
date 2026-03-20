@@ -12,9 +12,9 @@ class FederalOpportunitySerializer(serializers.ModelSerializer):
         model = FederalOpportunity
         fields = [
             'id', 'opportunity_id', 'title', 'agency_name', 'description',
-            'posted_date', 'close_date', 'award_floor', 'award_ceiling',
-            'eligible_applicants', 'cfda_numbers', 'url',
-            'is_open', 'days_until_close', 'created_at',
+            'post_date', 'close_date', 'award_floor', 'award_ceiling',
+            'eligible_applicants', 'cfda_numbers', 'grants_gov_url',
+            'is_open', 'days_until_close', 'synced_at',
         ]
 
 
@@ -38,7 +38,7 @@ class MatchPreferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = MatchPreference
         fields = [
-            'id', 'focus_areas', 'min_funding', 'max_funding',
+            'id', 'focus_areas', 'funding_range_min', 'funding_range_max',
             'description', 'is_active', 'updated_at',
         ]
 

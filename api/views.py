@@ -16,7 +16,7 @@ from .serializers import (
 class FederalOpportunityViewSet(viewsets.ReadOnlyModelViewSet):
     """Browse federal opportunities (read-only)."""
 
-    queryset = FederalOpportunity.objects.all().order_by('-posted_date')
+    queryset = FederalOpportunity.objects.all().order_by('-post_date')
     serializer_class = FederalOpportunitySerializer
     permission_classes = [permissions.IsAuthenticated]
 

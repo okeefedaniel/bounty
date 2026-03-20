@@ -74,7 +74,7 @@ class PushToHarborView(CoordinatorRequiredMixin, View):
             'award_floor': str(opp.award_floor) if opp.award_floor else '',
             'award_ceiling': str(opp.award_ceiling) if opp.award_ceiling else '',
             'eligible_applicants': opp.eligible_applicants or '',
-            'grants_gov_url': opp.url or '',
+            'grants_gov_url': opp.grants_gov_url or '',
             'bounty_opportunity_id': str(opp.pk),
         }
 
