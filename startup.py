@@ -132,6 +132,24 @@ def main():
     run(f"{manage_cmd} match_opportunities")
     log("=== Background tasks complete ===")
 
+    # Start background scheduler for periodic tasks (digest emails, grant sync)
+    import threading
+
+    def _scheduler():
+        """Run periodic tasks in a loop. Each command handles its own throttling."""
+        interval = int(os.environ.get('SCHEDULER_INTERVAL_SECONDS', 3600))  # default 1 hour
+        log(f"Scheduler started (interval={interval}s)")
+        while True:
+            time.sleep(interval)
+            log("=== Scheduler: running periodic tasks ===")
+            run(f"{manage_cmd} send_digest")
+            run(f"{manage_cmd} sync_federal_grants --limit 50")
+            run(f"{manage_cmd} match_opportunities")
+            log("=== Scheduler: periodic tasks complete ===")
+
+    scheduler_thread = threading.Thread(target=_scheduler, daemon=True, name='scheduler')
+    scheduler_thread.start()
+
     log("=== Startup complete, waiting for gunicorn ===")
     gunicorn_proc.wait()
     log(f"Gunicorn exited with code {gunicorn_proc.returncode}")
