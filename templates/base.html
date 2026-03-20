@@ -1,0 +1,178 @@
+{% load static %}
+{% load humanize %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Bounty{% endblock %} | {% trans "Federal Funds Discovery" %}</title>
+    {% block meta_description %}<meta name="description" content="{% trans 'Bounty — Federal Funds Discovery platform for finding, tracking, and collaborating on federal grant opportunities.' %}">{% endblock %}
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="{% static 'css/docklabs.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bounty.css' %}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+    <!-- WCAG 2.1 AA: Focus-visible styles for keyboard navigation -->
+    <style>
+      *:focus-visible { outline: 3px solid #F27124 !important; outline-offset: 2px; }
+      .btn:focus-visible { box-shadow: 0 0 0 0.25rem rgba(242, 113, 36, 0.5) !important; }
+    </style>
+</head>
+<body>
+    <!-- WCAG 2.1 AA: Skip navigation link -->
+    <a href="#main-content" class="visually-hidden-focusable bg-primary text-white p-2 position-absolute" style="z-index:9999">{% trans "Skip to main content" %}</a>
+
+    <!-- CT Brand Accent Bar -->
+    <header role="banner">
+    <div class="ct-accent-bar"></div>
+
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top" role="navigation" aria-label="{% trans "Main navigation" %}">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'portal:home' %}{% endif %}">
+                <i class="bi bi-bullseye me-2"></i>Bounty
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-label="{% trans "Toggle navigation menu" %}" aria-controls="mainNav" aria-expanded="false">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'portal:opportunities' %}">
+                            <i class="bi bi-globe me-1"></i>{% trans "Opportunities" %}
+                        </a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard' %}">
+                                <i class="bi bi-speedometer2 me-1"></i>{% trans "Dashboard" %}
+                            </a>
+                        </li>
+                        {% if user.is_coordinator %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'opportunities:tracked-list' %}">
+                                <i class="bi bi-bookmark-star me-1"></i>{% trans "Tracked" %}
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if user.has_ai_access %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-stars me-1"></i>{% trans "AI Matching" %}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'matching:recommendations' %}"><i class="bi bi-lightbulb me-2"></i>{% trans "Recommendations" %}</a></li>
+                                <li><a class="dropdown-item" href="{% url 'matching:preferences' %}"><i class="bi bi-gear me-2"></i>{% trans "Preferences" %}</a></li>
+                            </ul>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle me-1"></i>{{ user.get_full_name|default:user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><span class="dropdown-item-text text-muted small">{{ user.get_role_display }}</span></li>
+                                <li><hr class="dropdown-divider"></li>
+                                {% if user.is_coordinator %}
+                                <li><a class="dropdown-item" href="{% url 'integration:harbor-settings' %}"><i class="bi bi-link-45deg me-2"></i>{% trans "Harbor Connection" %}</a></li>
+                                {% endif %}
+                                {% if user.is_staff %}
+                                <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-gear me-2"></i>{% trans "Admin" %}</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="{% url 'core:logout' %}" aria-label="{% trans "Log out" %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item" aria-label="{% trans "Log out of your account" %}"><i class="bi bi-box-arrow-right me-2"></i>{% trans "Log Out" %}</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:login' %}">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>{% trans "Log In" %}
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    </header>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container-fluid px-0">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-0 mb-0" role="alert">
+            <div class="container">
+                {% if message.tags == 'error' %}
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                {% elif message.tags == 'success' %}
+                    <i class="bi bi-check-circle me-2"></i>
+                {% elif message.tags == 'warning' %}
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                {% else %}
+                    <i class="bi bi-info-circle me-2"></i>
+                {% endif %}
+                {{ message }}
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{% trans "Close alert" %}"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Breadcrumbs -->
+    {% block breadcrumbs %}{% endblock %}
+
+    <!-- Main Content -->
+    <main id="main-content" class="{% block main_class %}container py-4{% endblock %}">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-auto" role="contentinfo">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="fw-bold"><i class="bi bi-bullseye me-2"></i>Bounty</h6>
+                    <p class="small text-muted mb-0">
+                        {% trans "Federal Funds Discovery" %}<br>
+                        {% trans "Powered by DockLabs" %}
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="fw-bold">{% trans "Quick Links" %}</h6>
+                    <ul class="list-unstyled small">
+                        <li><a href="{% url 'portal:opportunities' %}" class="text-muted text-decoration-none">{% trans "Federal Opportunities" %}</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6 class="fw-bold">{% trans "Related" %}</h6>
+                    <ul class="list-unstyled small text-muted">
+                        <li><a href="https://harbor.docklabs.ai" class="text-muted text-decoration-none"><i class="bi bi-bank2 me-1"></i>Harbor</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-3 border-secondary">
+            <p class="text-muted small mb-0 text-center">
+                &copy; {% now "Y" %} DockLabs. {% trans "All rights reserved." %}
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

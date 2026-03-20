@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Log In" %}{% endblock %}
+
+{% block main_class %}container py-5{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-card {
+        max-width: 450px;
+        margin: 0 auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-card">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4 p-md-5">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <div class="mb-3">
+                    <i class="bi bi-bullseye display-4 text-primary"></i>
+                </div>
+                <h2 class="fw-bold">Bounty</h2>
+                <p class="text-muted">{% trans "Federal Funds Discovery" %}</p>
+            </div>
+
+            <!-- Login Form -->
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label for="{{ form.username.id_for_label }}" class="form-label fw-semibold">
+                        {% trans "Username" %}
+                    </label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.username.errors %}{{ error }}{% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.password.id_for_label }}" class="form-label fw-semibold">
+                        {% trans "Password" %}
+                    </label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.password.errors %}{{ error }}{% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>{% trans "Log In" %}
+                    </button>
+                </div>
+            </form>
+
+            <!-- SSO Divider -->
+            <div class="d-flex align-items-center my-4">
+                <hr class="flex-grow-1">
+                <span class="px-3 text-muted small">{% trans "OR" %}</span>
+                <hr class="flex-grow-1">
+            </div>
+
+            <!-- Microsoft SSO -->
+            <div class="d-grid">
+                <a href="{% url 'microsoft_login' %}"
+                   class="btn btn-outline-dark btn-lg d-flex align-items-center justify-content-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21" class="me-2">
+                        <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+                        <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+                        <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+                        <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+                    </svg>
+                    {% trans "Sign in with Microsoft" %}
+                </a>
+            </div>
+
+            {% if DEMO_MODE %}
+            <!-- Quick Demo Login -->
+            <div class="d-flex align-items-center my-4">
+                <hr class="flex-grow-1">
+                <span class="px-3 text-muted small">{% trans "QUICK DEMO LOGIN" %}</span>
+                <hr class="flex-grow-1">
+            </div>
+            <div class="row g-2">
+                <div class="col-6">
+                    <form method="post" action="{% url 'core:demo-login' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="username" value="coordinator">
+                        <button type="submit" class="btn btn-outline-primary btn-sm w-100">
+                            <i class="bi bi-bookmark-star me-1"></i>Coordinator
+                        </button>
+                    </form>
+                </div>
+                <div class="col-6">
+                    <form method="post" action="{% url 'core:demo-login' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="username" value="analyst">
+                        <button type="submit" class="btn btn-outline-success btn-sm w-100">
+                            <i class="bi bi-graph-up me-1"></i>Analyst
+                        </button>
+                    </form>
+                </div>
+                <div class="col-6">
+                    <form method="post" action="{% url 'core:demo-login' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="username" value="viewer">
+                        <button type="submit" class="btn btn-outline-warning btn-sm w-100">
+                            <i class="bi bi-eye me-1"></i>Viewer
+                        </button>
+                    </form>
+                </div>
+                <div class="col-6">
+                    <form method="post" action="{% url 'core:demo-login' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="username" value="admin">
+                        <button type="submit" class="btn btn-outline-dark btn-sm w-100">
+                            <i class="bi bi-shield-lock me-1"></i>Admin
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Links -->
+            <div class="text-center mt-3">
+                <p class="mb-0">
+                    <span class="text-muted small" title="{% trans "Contact your system administrator to reset your password" %}">
+                        {% trans "Forgot password? Contact your administrator." %}
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

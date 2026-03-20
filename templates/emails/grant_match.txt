@@ -1,0 +1,24 @@
+{% load i18n %}{% trans "Bounty" %}
+{% trans "Federal Funds Discovery" %}
+
+---
+
+{% trans "NEW FEDERAL OPPORTUNITY MATCH" %}
+
+{% blocktrans with name=user.get_full_name|default:user.username %}Hello {{ name }},{% endblocktrans %}
+
+{% trans "Our AI matching system found a federal funding opportunity that aligns with your preferences." %}
+
+{% trans "Opportunity" %}: {{ title }}
+{% trans "Agency" %}: {{ agency }}
+{% trans "Relevance Score" %}: {{ score }}%
+{% trans "Why This Matches" %}: {{ explanation }}
+
+{% trans "View Opportunity" %}: {{ detail_url }}
+
+{% trans "You can manage your matching preferences and view all recommendations from your Bounty dashboard." %}
+
+---
+
+{% trans "This is an automated message from Bounty. Do not reply directly." %}
+{% trans "Powered by DockLabs" %}

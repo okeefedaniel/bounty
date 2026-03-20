@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Harbor Connection Settings" %}{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="breadcrumb" class="bg-light border-bottom">
+    <div class="container py-2">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">{% trans "Dashboard" %}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{% trans "Harbor Connection" %}</li>
+        </ol>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h2 class="mb-1"><i class="bi bi-link-45deg me-2"></i>{% trans "Harbor Connection Settings" %}</h2>
+        <p class="text-muted mb-4">
+            {% trans "Configure the connection to Harbor for pushing awarded federal opportunities as state grant programs." %}
+        </p>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="id_harbor_base_url" class="form-label fw-semibold">{% trans "Harbor Base URL" %}</label>
+                                <input type="url" name="harbor_base_url" id="id_harbor_base_url"
+                                       class="form-control" value="{{ object.harbor_base_url }}"
+                                       placeholder="https://harbor.docklabs.ai">
+                                <div class="form-text">{% trans "The base URL of your Harbor instance." %}</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_harbor_api_token" class="form-label fw-semibold">{% trans "API Token" %}</label>
+                                <input type="password" name="harbor_api_token" id="id_harbor_api_token"
+                                       class="form-control" value="{{ object.harbor_api_token }}"
+                                       placeholder="{% trans 'Enter your Harbor API token' %}">
+                                <div class="form-text">{% trans "Token for authenticating with Harbor's federal intake API." %}</div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input type="checkbox" name="is_active" id="id_is_active"
+                                           class="form-check-input" {% if object.is_active %}checked{% endif %}>
+                                    <label for="id_is_active" class="form-check-label">{% trans "Connection Active" %}</label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>{% trans "Save Settings" %}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card bg-light border-0">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="bi bi-info-circle me-2"></i>{% trans "About Harbor Integration" %}</h6>
+                        <p class="small text-muted mb-2">
+                            {% trans "When a tracked federal opportunity reaches 'Awarded' status, you can push it to Harbor to create a draft state grant program." %}
+                        </p>
+                        <p class="small text-muted mb-0">
+                            {% trans "Contact your Harbor administrator to obtain an API token." %}
+                        </p>
+                    </div>
+                </div>
+                {% if object.last_synced_at %}
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h6 class="card-title text-muted"><i class="bi bi-clock-history me-2"></i>{% trans "Last Sync" %}</h6>
+                        <p class="mb-0 small">{{ object.last_synced_at|date:"M d, Y g:i A" }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

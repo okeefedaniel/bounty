@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load humanize %}
+
+{% block title %}{% trans "Dashboard" %}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        {% blocktrans with name=user.get_full_name|default:user.username %}
+        <h2 class="mb-1">Welcome back, {{ name }}</h2>
+        {% endblocktrans %}
+        {% if user.organization_name %}
+        <p class="text-muted mb-0">
+            <i class="bi bi-building me-1"></i>{{ user.organization_name }}
+        </p>
+        {% endif %}
+    </div>
+    <div>
+        <span class="badge bg-primary fs-6">{{ user.get_role_display }}</span>
+    </div>
+</div>
+
+{% if user.is_coordinator %}
+{# ===== COORDINATOR DASHBOARD ===== #}
+
+{# -- Stat Cards -- #}
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <a href="{% url 'opportunities:tracked-list' %}" class="text-decoration-none">
+            <div class="card stat-card accent-blue h-100 stat-card-link">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value">{{ tracked_count|default:"0" }}</div>
+                            <div class="stat-label">{% trans "Tracked Opportunities" %}</div>
+                        </div>
+                        <i class="bi bi-bookmark-star fs-3 text-muted opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{% url 'portal:opportunities' %}" class="text-decoration-none">
+            <div class="card stat-card accent-green h-100 stat-card-link">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value">{{ open_federal_count|default:"0" }}</div>
+                            <div class="stat-label">{% trans "Open Opportunities" %}</div>
+                        </div>
+                        <i class="bi bi-globe fs-3 text-muted opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card accent-gold h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-value">{{ approaching_deadlines|length|default:"0" }}</div>
+                        <div class="stat-label">{% trans "Approaching Deadlines" %}</div>
+                    </div>
+                    <i class="bi bi-clock fs-3 text-muted opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        {% if user.has_ai_access %}
+        <a href="{% url 'matching:recommendations' %}" class="text-decoration-none">
+            <div class="card stat-card accent-purple h-100 stat-card-link">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value">{{ recommended_matches|length|default:"0" }}</div>
+                            <div class="stat-label">{% trans "AI Matches" %}</div>
+                        </div>
+                        <i class="bi bi-stars fs-3 text-muted opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% else %}
+        <div class="card stat-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-value">-</div>
+                        <div class="stat-label">{% trans "AI Matches" %}</div>
+                    </div>
+                    <i class="bi bi-stars fs-3 text-muted opacity-50"></i>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    {# -- Tracked Opportunities -- #}
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-bookmark-star me-2"></i>{% trans "Recent Tracked Opportunities" %}</span>
+                <a href="{% url 'opportunities:tracked-list' %}" class="btn btn-sm btn-outline-primary">{% trans "View All" %}</a>
+            </div>
+            <div class="card-body p-0">
+                {% if tracked_opportunities %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Opportunity" %}</th>
+                                <th>{% trans "Status" %}</th>
+                                <th>{% trans "Priority" %}</th>
+                                <th>{% trans "Close Date" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in tracked_opportunities|slice:":5" %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'opportunities:tracked-detail' item.pk %}" class="text-decoration-none fw-semibold">
+                                        {{ item.federal_opportunity.title|truncatewords:8 }}
+                                    </a>
+                                </td>
+                                <td><span class="badge badge-{{ item.status }}">{{ item.get_status_display }}</span></td>
+                                <td>
+                                    {% if item.priority == 'high' %}
+                                    <span class="badge bg-danger">{% trans "High" %}</span>
+                                    {% elif item.priority == 'medium' %}
+                                    <span class="badge bg-warning text-dark">{% trans "Medium" %}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{% trans "Low" %}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="small text-muted">
+                                    {% if item.federal_opportunity.close_date %}
+                                        {{ item.federal_opportunity.close_date|date:"M d, Y" }}
+                                    {% else %}
+                                        {% trans "N/A" %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-bookmark-x d-block fs-1 mb-2"></i>
+                    <p class="mb-2">{% trans "No tracked opportunities yet." %}</p>
+                    <a href="{% url 'portal:opportunities' %}" class="btn btn-sm btn-primary">{% trans "Browse Opportunities" %}</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# -- Sidebar -- #}
+    <div class="col-lg-4">
+        {# Approaching Deadlines #}
+        {% if approaching_deadlines %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-exclamation-triangle me-2 text-warning"></i>{% trans "Approaching Deadlines" %}
+            </div>
+            <div class="list-group list-group-flush">
+                {% for item in approaching_deadlines|slice:":5" %}
+                <a href="{% url 'opportunities:tracked-detail' item.pk %}" class="list-group-item list-group-item-action">
+                    <div class="fw-semibold small">{{ item.federal_opportunity.title|truncatewords:8 }}</div>
+                    <small class="text-danger">
+                        <i class="bi bi-clock me-1"></i>
+                        {{ item.federal_opportunity.close_date|date:"M d, Y" }}
+                        {% with days=item.federal_opportunity.days_until_close %}
+                        {% if days is not None %}
+                            ({{ days }}{% trans "d" %})
+                        {% endif %}
+                        {% endwith %}
+                    </small>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# AI Recommendations #}
+        {% if user.has_ai_access and recommended_matches %}
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-stars me-2"></i>{% trans "Top AI Matches" %}</span>
+                <a href="{% url 'matching:recommendations' %}" class="btn btn-sm btn-outline-primary">{% trans "View All" %}</a>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for match in recommended_matches|slice:":3" %}
+                <a href="{% url 'portal:opportunity-detail' match.federal_opportunity.pk %}" class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="fw-semibold small">{{ match.federal_opportunity.title|truncatewords:6 }}</div>
+                        <span class="badge {% if match.relevance_score >= 85 %}bg-success{% elif match.relevance_score >= 70 %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                            {{ match.relevance_score }}%
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# Quick Actions #}
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-lightning me-2"></i>{% trans "Quick Actions" %}
+            </div>
+            <div class="card-body d-grid gap-2">
+                <a href="{% url 'portal:opportunities' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-globe me-1"></i>{% trans "Browse Opportunities" %}
+                </a>
+                {% if user.has_ai_access %}
+                <a href="{% url 'matching:preferences' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-gear me-1"></i>{% trans "Matching Preferences" %}
+                </a>
+                {% endif %}
+                <a href="{% url 'integration:harbor-settings' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-link-45deg me-1"></i>{% trans "Harbor Connection" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+{# ===== VIEWER / ANALYST DASHBOARD ===== #}
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        {# Recent Federal Opportunities #}
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-globe me-2"></i>{% trans "Recent Federal Opportunities" %}</span>
+                <a href="{% url 'portal:opportunities' %}" class="btn btn-sm btn-outline-primary">{% trans "Browse All" %}</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_federal %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Opportunity" %}</th>
+                                <th>{% trans "Agency" %}</th>
+                                <th>{% trans "Close Date" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for opp in recent_federal|slice:":5" %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'portal:opportunity-detail' opp.pk %}" class="text-decoration-none fw-semibold">
+                                        {{ opp.title|truncatewords:10 }}
+                                    </a>
+                                </td>
+                                <td><span class="badge badge-grant-type">{{ opp.agency_code }}</span></td>
+                                <td class="small text-muted">
+                                    {% if opp.close_date %}{{ opp.close_date|date:"M d, Y" }}{% else %}{% trans "N/A" %}{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <p class="mb-0">{% trans "No recent opportunities." %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        {# AI Matches (if available) #}
+        {% if user.has_ai_access and recommended_matches %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-stars me-2"></i>{% trans "Your AI Matches" %}
+                {% if new_match_count %}
+                <span class="badge bg-danger ms-1">{{ new_match_count }} {% trans "new" %}</span>
+                {% endif %}
+            </div>
+            <div class="list-group list-group-flush">
+                {% for match in recommended_matches|slice:":5" %}
+                <a href="{% url 'portal:opportunity-detail' match.federal_opportunity.pk %}" class="list-group-item list-group-item-action">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="fw-semibold small">{{ match.federal_opportunity.title|truncatewords:6 }}</div>
+                        <span class="badge {% if match.relevance_score >= 85 %}bg-success{% elif match.relevance_score >= 70 %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                            {{ match.relevance_score }}%
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# Quick Actions #}
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-lightning me-2"></i>{% trans "Quick Actions" %}
+            </div>
+            <div class="card-body d-grid gap-2">
+                <a href="{% url 'portal:opportunities' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-globe me-1"></i>{% trans "Browse Opportunities" %}
+                </a>
+                {% if user.has_ai_access %}
+                <a href="{% url 'matching:recommendations' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-stars me-1"></i>{% trans "AI Recommendations" %}
+                </a>
+                <a href="{% url 'matching:preferences' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-gear me-1"></i>{% trans "Matching Preferences" %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
