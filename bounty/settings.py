@@ -134,6 +134,7 @@ GRANTS_GOV_API_KEY = os.environ.get('GRANTS_GOV_API_KEY', '')
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
 GRANT_MATCH_MIN_SCORE = 60
 GRANT_MATCH_NOTIFY_SCORE = 75
+GRANT_MATCH_HIGH_SCORE = 90
 
 # Harbor integration
 HARBOR_API_BASE_URL = os.environ.get('HARBOR_API_BASE_URL', 'https://harbor.docklabs.ai')
@@ -269,6 +270,7 @@ AUTHENTICATION_BACKENDS = [
 ACCOUNT_LOGIN_METHODS = {'username', 'email'}
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
+ACCOUNT_SIGNUP_ENABLED = False  # Users created by admin only
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
 

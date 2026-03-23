@@ -70,27 +70,6 @@
                 </div>
             </form>
 
-            <!-- SSO Divider -->
-            <div class="d-flex align-items-center my-4">
-                <hr class="flex-grow-1">
-                <span class="px-3 text-muted small">{% trans "OR" %}</span>
-                <hr class="flex-grow-1">
-            </div>
-
-            <!-- Microsoft SSO -->
-            <div class="d-grid">
-                <a href="{% url 'microsoft_login' %}"
-                   class="btn btn-outline-dark btn-lg d-flex align-items-center justify-content-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21" class="me-2">
-                        <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
-                        <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
-                        <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
-                        <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
-                    </svg>
-                    {% trans "Sign in with Microsoft" %}
-                </a>
-            </div>
-
             {% if DEMO_MODE %}
             <!-- Quick Demo Login -->
             <div class="d-flex align-items-center my-4">
