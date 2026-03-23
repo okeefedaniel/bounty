@@ -126,10 +126,12 @@ def main():
 
     # Post-migration tasks
     log("=== Running background startup tasks ===")
+    # Always ensure demo users exist
+    if os.environ.get('DEMO_MODE', '').lower() in ('true', '1', 'yes'):
+        run(f"{manage_cmd} seed_demo_users")
     if os.environ.get('SEED_ON_DEPLOY', '').lower() in ('true', '1', 'yes'):
         run(f"{manage_cmd} shell < seed_data.py")
     run(f"{manage_cmd} sync_federal_grants --limit 10")
-    run(f"{manage_cmd} match_opportunities")
     log("=== Background tasks complete ===")
 
     # Start background scheduler for periodic tasks (digest emails, grant sync)
@@ -138,13 +140,20 @@ def main():
     def _scheduler():
         """Run periodic tasks in a loop. Each command handles its own throttling."""
         interval = int(os.environ.get('SCHEDULER_INTERVAL_SECONDS', 3600))  # default 1 hour
-        log(f"Scheduler started (interval={interval}s)")
+        match_interval = int(os.environ.get('MATCH_INTERVAL_HOURS', 24))  # default once daily
+        cycles_per_match = max(1, match_interval * 3600 // interval)
+        cycle = 0
+        log(f"Scheduler started (interval={interval}s, match every {match_interval}h)")
         while True:
             time.sleep(interval)
+            cycle += 1
             log("=== Scheduler: running periodic tasks ===")
             run(f"{manage_cmd} send_digest")
             run(f"{manage_cmd} sync_federal_grants --limit 50")
-            run(f"{manage_cmd} match_opportunities")
+            # AI matching is expensive — only run on the configured interval
+            if cycle % cycles_per_match == 0:
+                log("=== Scheduler: running AI matching ===")
+                run(f"{manage_cmd} match_opportunities")
             log("=== Scheduler: periodic tasks complete ===")
 
     scheduler_thread = threading.Thread(target=_scheduler, daemon=True, name='scheduler')
