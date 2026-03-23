@@ -127,20 +127,9 @@ def main():
     # Post-migration tasks
     log("=== Running background startup tasks ===")
 
-    # Bootstrap superuser from env vars (one-time, idempotent)
-    su_user = os.environ.get('SUPERUSER_USERNAME', '')
-    su_email = os.environ.get('SUPERUSER_EMAIL', '')
-    su_pass = os.environ.get('SUPERUSER_PASSWORD', '')
-    if os.environ.get('CREATE_SUPERUSER', '').lower() in ('true', '1', 'yes') and su_user and su_email and su_pass:
-        run(
-            f"{manage_cmd} shell -c \""
-            f"from core.models import User; "
-            f"u, c = User.objects.get_or_create(username='{su_user}', defaults={{'email': '{su_email}', 'role': 'admin', 'is_staff': True, 'is_superuser': True}}); "
-            f"u.set_password('{su_pass}') if c else None; "
-            f"u.save() if c else None; "
-            f"print('Created superuser' if c else 'Superuser already exists')"
-            f"\""
-        )
+    # Bootstrap superuser from env vars (idempotent, always resets password)
+    if os.environ.get('CREATE_SUPERUSER', '').lower() in ('true', '1', 'yes'):
+        run(f"{manage_cmd} ensure_superuser")
 
     # Demo mode: seed demo users
     if os.environ.get('DEMO_MODE', '').lower() in ('true', '1', 'yes'):

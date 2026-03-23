@@ -1,0 +1,50 @@
+"""Bootstrap a superuser from environment variables.
+
+Idempotent: creates the user if missing, resets password if it already exists.
+
+Usage:
+    SUPERUSER_USERNAME=dok SUPERUSER_EMAIL=dok@example.com SUPERUSER_PASSWORD=secret \
+    python manage.py ensure_superuser
+"""
+import os
+
+from django.core.management.base import BaseCommand
+
+from core.models import User
+
+
+class Command(BaseCommand):
+    help = 'Create or update a superuser from env vars.'
+
+    def handle(self, *args, **options):
+        username = os.environ.get('SUPERUSER_USERNAME', '').strip()
+        email = os.environ.get('SUPERUSER_EMAIL', '').strip()
+        password = os.environ.get('SUPERUSER_PASSWORD', '').strip()
+
+        if not all([username, email, password]):
+            self.stdout.write(self.style.WARNING(
+                'Skipping: SUPERUSER_USERNAME, SUPERUSER_EMAIL, and '
+                'SUPERUSER_PASSWORD must all be set.'
+            ))
+            return
+
+        user, created = User.objects.get_or_create(
+            username=username,
+            defaults={
+                'email': email,
+                'role': 'admin',
+                'is_staff': True,
+                'is_superuser': True,
+            },
+        )
+
+        # Always reset password (handles both new and existing users)
+        user.set_password(password)
+        user.is_staff = True
+        user.is_superuser = True
+        user.save()
+
+        if created:
+            self.stdout.write(self.style.SUCCESS(f'Created superuser "{username}"'))
+        else:
+            self.stdout.write(self.style.SUCCESS(f'Updated superuser "{username}" password'))
