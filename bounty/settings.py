@@ -271,7 +271,7 @@ AUTHENTICATION_BACKENDS = [
 ACCOUNT_LOGIN_METHODS = {'username', 'email'}
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
-ACCOUNT_SIGNUP_ENABLED = False  # Users created by admin only
+ACCOUNT_ADAPTER = 'core.adapters.ApprovalRequiredAdapter'
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
