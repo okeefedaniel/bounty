@@ -40,6 +40,11 @@ class User(AbstractUser):
         verbose_name=_('Anthropic API Key'),
         help_text=_('Personal Claude API key for AI-powered matching.'),
     )
+    is_beta_tester = models.BooleanField(
+        default=False,
+        verbose_name=_('Beta Tester'),
+        help_text=_('Beta testers can submit feedback directly from within the product.'),
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

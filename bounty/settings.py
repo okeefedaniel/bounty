@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'keel.core',
     'keel.security',
     'keel.notifications',
+    'keel.requests',
     # Third party
     'rest_framework',
     'crispy_forms',

@@ -30,6 +30,9 @@ urlpatterns = [
     # Notifications
     path('notifications/', include('keel.notifications.urls')),
 
+    # Feedback / change requests (beta testers + admins)
+    path('feedback/', include('keel.requests.urls')),
+
     # AI matching
     path('matching/', include('matching.urls')),
 
