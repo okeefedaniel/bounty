@@ -123,10 +123,8 @@
                     {% trans "Don't have an account?" %}
                     <a href="{% url 'account_signup' %}">{% trans "Request access" %}</a>
                 </p>
-                <p class="mb-0">
-                    <span class="text-muted small" title="{% trans "Contact your system administrator to reset your password" %}">
-                        {% trans "Forgot password? Contact your administrator." %}
-                    </span>
+                <p class="mb-0 small">
+                    <a href="{% url 'account_reset_password' %}">{% trans "Forgot password?" %}</a>
                 </p>
             </div>
         </div>
