@@ -75,7 +75,7 @@ class OpportunityDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        if user.is_authenticated and user.is_coordinator:
+        if user.is_authenticated:
             context['tracked_record'] = TrackedOpportunity.objects.filter(
                 federal_opportunity=self.object, tracked_by=user,
             ).first()
@@ -161,7 +161,7 @@ class TrackedOpportunityListView(CoordinatorRequiredMixin, SortableListMixin, Li
         return context
 
 
-class TrackOpportunityView(CoordinatorRequiredMixin, View):
+class TrackOpportunityView(LoginRequiredMixin, View):
     """POST-only view to start tracking a federal opportunity."""
 
     http_method_names = ['post']
