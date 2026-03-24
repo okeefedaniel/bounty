@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import DetailView, FormView, ListView, UpdateView
 
-from core.mixins import CoordinatorRequiredMixin, SortableListMixin
+from core.mixins import SortableListMixin
 from core.models import User
 
 from .forms import CollaboratorForm, TrackedOpportunityForm
@@ -112,7 +112,7 @@ class HomeView(ListView):
 # Coordinator pipeline views
 # ---------------------------------------------------------------------------
 
-class TrackedOpportunityListView(CoordinatorRequiredMixin, SortableListMixin, ListView):
+class TrackedOpportunityListView(LoginRequiredMixin, SortableListMixin, ListView):
     """List federal opportunities tracked by the current user."""
 
     model = TrackedOpportunity
@@ -184,7 +184,7 @@ class TrackOpportunityView(LoginRequiredMixin, View):
         return redirect(next_url or reverse('dashboard'))
 
 
-class TrackedOpportunityDetailView(CoordinatorRequiredMixin, DetailView):
+class TrackedOpportunityDetailView(LoginRequiredMixin, DetailView):
     """Detail view for a tracked opportunity with edit form and collaborators."""
 
     model = TrackedOpportunity
@@ -206,7 +206,7 @@ class TrackedOpportunityDetailView(CoordinatorRequiredMixin, DetailView):
         return context
 
 
-class TrackedOpportunityUpdateView(CoordinatorRequiredMixin, UpdateView):
+class TrackedOpportunityUpdateView(LoginRequiredMixin, UpdateView):
     """Update a tracked opportunity's status, notes, and priority."""
 
     model = TrackedOpportunity
@@ -235,7 +235,7 @@ class TrackedOpportunityUpdateView(CoordinatorRequiredMixin, UpdateView):
         return reverse('opportunities:tracked-detail', kwargs={'pk': self.object.pk})
 
 
-class AddCollaboratorView(CoordinatorRequiredMixin, FormView):
+class AddCollaboratorView(LoginRequiredMixin, FormView):
     """Add an internal or external collaborator to a tracked opportunity."""
 
     form_class = CollaboratorForm
@@ -276,7 +276,7 @@ class AddCollaboratorView(CoordinatorRequiredMixin, FormView):
         return context
 
 
-class RemoveCollaboratorView(CoordinatorRequiredMixin, View):
+class RemoveCollaboratorView(LoginRequiredMixin, View):
     """POST-only view to deactivate a collaborator."""
 
     http_method_names = ['post']
