@@ -97,7 +97,7 @@ class DismissMatchView(LoginRequiredMixin, View):
         return redirect(next_url or reverse('matching:recommendations'))
 
 
-class TrackAndDismissView(CoordinatorRequiredMixin, View):
+class TrackAndDismissView(LoginRequiredMixin, View):
     """POST-only: track a federal opportunity AND dismiss the recommendation."""
 
     http_method_names = ['post']

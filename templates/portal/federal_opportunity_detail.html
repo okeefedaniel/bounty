@@ -265,6 +265,7 @@
                 <form method="post" action="{% url 'opportunities:tracked-add' %}">
                     {% csrf_token %}
                     <input type="hidden" name="federal_opportunity_id" value="{{ opportunity.pk }}">
+                    <input type="hidden" name="next" value="{{ request.path }}">
                     <button type="submit" class="btn btn-warning w-100">
                         <i class="bi bi-bookmark-plus me-1"></i>{% trans "Track This Opportunity" %}
                     </button>
