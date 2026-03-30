@@ -31,7 +31,7 @@ class OpportunityListView(ListView):
 
         agency = self.request.GET.get('agency')
         if agency:
-            qs = qs.filter(agency_code=agency)
+            qs = qs.filter(agency_name=agency)
 
         status = self.request.GET.get('status')
         if status:
@@ -55,10 +55,10 @@ class OpportunityListView(ListView):
             'category': self.request.GET.get('category', ''),
             'q': self.request.GET.get('q', ''),
         }
-        context['agency_codes'] = (
-            FederalOpportunity.objects.exclude(agency_code='')
-            .values_list('agency_code', flat=True)
-            .distinct().order_by('agency_code')
+        context['agencies'] = (
+            FederalOpportunity.objects.exclude(agency_name='')
+            .values_list('agency_name', flat=True)
+            .distinct().order_by('agency_name')
         )
         context['statuses'] = FederalOpportunity.OpportunityStatus.choices
         context['view_mode'] = self.request.GET.get('view', 'cards')

@@ -136,7 +136,7 @@ def main():
         run(f"{manage_cmd} seed_demo_users")
     if os.environ.get('SEED_ON_DEPLOY', '').lower() in ('true', '1', 'yes'):
         run(f"{manage_cmd} shell < seed_data.py")
-    run(f"{manage_cmd} sync_federal_grants --limit 10")
+    run(f"{manage_cmd} sync_federal_grants --limit 100")
     log("=== Background tasks complete ===")
 
     # Start background scheduler for periodic tasks (digest emails, grant sync)
@@ -154,7 +154,7 @@ def main():
             cycle += 1
             log("=== Scheduler: running periodic tasks ===")
             run(f"{manage_cmd} send_digest")
-            run(f"{manage_cmd} sync_federal_grants --limit 50")
+            run(f"{manage_cmd} sync_federal_grants --limit 100")
             # AI matching is expensive — only run on the configured interval
             if cycle % cycles_per_match == 0:
                 log("=== Scheduler: running AI matching ===")

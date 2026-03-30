@@ -50,13 +50,13 @@
                            value="{{ current_filters.q }}">
                 </div>
                 <div class="col-md-3">
-                    <label for="filter-agency" class="form-label fw-semibold">{% trans "Agency Code" %}</label>
+                    <label for="filter-agency" class="form-label fw-semibold">{% trans "Agency" %}</label>
                     <select name="agency" id="filter-agency" class="form-select">
                         <option value="">{% trans "All Agencies" %}</option>
-                        {% for code in agency_codes %}
-                        <option value="{{ code }}"
-                            {% if current_filters.agency == code %}selected{% endif %}>
-                            {{ code }}
+                        {% for name in agencies %}
+                        <option value="{{ name }}"
+                            {% if current_filters.agency == name %}selected{% endif %}>
+                            {{ name }}
                         </option>
                         {% endfor %}
                     </select>
