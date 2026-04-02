@@ -108,19 +108,6 @@ class Command(BaseCommand):
                 },
                 'filters': {
                     'opportunity_status': {'one_of': [status]},
-                    'applicant_type': {
-                        'one_of': [
-                            'state_governments',
-                            'county_governments',
-                            'city_or_township_governments',
-                            'special_district_governments',
-                            'independent_school_districts',
-                            'public_and_state_institutions_of_higher_education',
-                            'federally_recognized_native_american_tribal_governments',
-                            'nonprofits_non_higher_education_with_501c3',
-                            'nonprofits_non_higher_education_without_501c3',
-                        ],
-                    },
                 },
             }
 
