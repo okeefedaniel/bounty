@@ -291,6 +291,8 @@ MFA_PASSKEY_LOGIN_ENABLED = True
 
 # Keel
 KEEL_PRODUCT_NAME = 'Bounty'
+KEEL_PRODUCT_ICON = 'bi-bullseye'
+KEEL_PRODUCT_SUBTITLE = 'Federal Grants Intelligence'
 KEEL_API_URL = os.environ.get('KEEL_API_URL', 'https://keel.docklabs.ai')
 KEEL_API_KEY = os.environ.get('KEEL_API_KEY', '')
 KEEL_AUDIT_LOG_MODEL = 'core.AuditLog'
