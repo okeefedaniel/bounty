@@ -270,7 +270,7 @@ class Command(BaseCommand):
             'opportunity_number': opp.get('opportunity_number', '') or '',
             'title': self._strip_html(opp.get('opportunity_title', '') or ''),
             'description': self._strip_html(summary.get('summary_description', '') or ''),
-            'agency_name': summary.get('agency_name', '') or opp.get('agency', '') or '',
+            'agency_name': opp.get('agency_name', '') or summary.get('agency_name', '') or opp.get('agency', '') or '',
             'agency_code': opp.get('agency_code', '') or summary.get('agency_code', '') or '',
             'category': summary.get('funding_category', '') or '',
             'funding_instrument': funding_instrument,
