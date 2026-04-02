@@ -1,6 +1,8 @@
 import uuid
 
 from django.conf import settings
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -78,6 +80,9 @@ class FederalOpportunity(models.Model):
     synced_at = models.DateTimeField(auto_now=True)
     raw_data = models.JSONField(default=dict, blank=True)
 
+    # Full-text search (populated by sync + management command)
+    search_vector = SearchVectorField(null=True)
+
     class Meta:
         ordering = ['-post_date', '-close_date']
         verbose_name = _('Federal Opportunity')
@@ -85,6 +90,7 @@ class FederalOpportunity(models.Model):
         indexes = [
             models.Index(fields=['opportunity_status', 'close_date'], name='idx_fedopp_status_close'),
             models.Index(fields=['agency_code'], name='idx_fedopp_agency'),
+            GinIndex(fields=['search_vector'], name='fedopp_search_gin'),
         ]
 
     def __str__(self):

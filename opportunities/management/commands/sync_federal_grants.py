@@ -85,6 +85,16 @@ class Command(BaseCommand):
             total_created += created
             total_updated += updated
 
+        # Update search vectors for all synced records
+        if not dry_run:
+            try:
+                from opportunities.search import GrantSearchEngine
+                engine = GrantSearchEngine()
+                sv_count = engine.update_search_vectors()
+                self.stdout.write(f'  Search vectors updated: {sv_count}')
+            except Exception as e:
+                self.stderr.write(f'  Search vector update failed: {e}')
+
         # Summary
         self.stdout.write(self.style.SUCCESS(
             f'\nSync complete: {total_created} created, {total_updated} updated'

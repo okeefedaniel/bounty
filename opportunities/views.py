@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Case, IntegerField, Q, Value, When
 from django.shortcuts import get_object_or_404, redirect
@@ -9,9 +10,12 @@ from django.views.generic import DetailView, FormView, ListView, UpdateView
 
 from core.mixins import SortableListMixin
 from core.models import User
+from keel.search.views import chat_stream_view, instant_search_view
 
+from .chat import GrantChat
 from .forms import CollaboratorForm, TrackedOpportunityForm
 from .models import FederalOpportunity, OpportunityCollaborator, TrackedOpportunity
+from .search import GrantSearchEngine
 
 
 # ---------------------------------------------------------------------------
@@ -80,6 +84,25 @@ class OpportunityDetailView(DetailView):
                 federal_opportunity=self.object, tracked_by=user,
             ).first()
         return context
+
+
+# ---------------------------------------------------------------------------
+# Search API endpoints
+# ---------------------------------------------------------------------------
+
+_grant_engine = GrantSearchEngine()
+_grant_chat = GrantChat()
+
+
+def opportunity_instant(request):
+    """GET /opportunities/instant/?q=... — typeahead JSON endpoint."""
+    return instant_search_view(request, _grant_engine)
+
+
+@login_required
+def opportunity_chat(request):
+    """POST /opportunities/chat/ — AI streaming chat endpoint."""
+    return chat_stream_view(request, _grant_chat)
 
 
 class HomeView(ListView):

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% load humanize %}
+{% load static %}
 
 {% block title %}{% trans "Federal Funding Opportunities" %}{% endblock %}
 
@@ -35,7 +36,7 @@
     </div>
 </div>
 
-<!-- Filter Bar -->
+<!-- Search & Filter Bar -->
 <div class="card border-0 shadow-sm mb-4 mt-3">
     <div class="card-body">
         <form method="get" action="{% url 'portal:opportunities' %}">
@@ -43,11 +44,23 @@
             <input type="hidden" name="view" value="list">
             {% endif %}
             <div class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label for="filter-search" class="form-label fw-semibold">{% trans "Search" %}</label>
-                    <input type="text" name="q" id="filter-search" class="form-control"
-                           placeholder="{% trans "Search title or description..." %}"
-                           value="{{ current_filters.q }}">
+                <div class="col-md-4">
+                    <label for="keel-search-input" class="form-label fw-semibold">{% trans "Search" %}</label>
+                    <div id="keel-search-app"
+                         data-instant-url="{% url 'portal:opportunity-instant' %}"
+                         style="position: relative;">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                            <input type="text" name="q" id="keel-search-input"
+                                   class="form-control border-start-0"
+                                   placeholder="{% trans "Search grants, agencies, topics..." %}"
+                                   value="{{ current_filters.q }}"
+                                   autocomplete="off">
+                        </div>
+                        <div id="keel-instant-results"
+                             class="position-absolute w-100 bg-white border rounded-bottom shadow-lg"
+                             style="display:none; z-index:1050; max-height:400px; overflow-y:auto; top:100%;"></div>
+                    </div>
                 </div>
                 <div class="col-md-3">
                     <label for="filter-agency" class="form-label fw-semibold">{% trans "Agency" %}</label>
@@ -61,7 +74,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="filter-status" class="form-label fw-semibold">{% trans "Status" %}</label>
                     <select name="status" id="filter-status" class="form-select">
                         <option value="">{% trans "All Statuses" %}</option>
@@ -326,4 +339,8 @@
     {% endif %}
 </div>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'keel/search/js/instant_search.js' %}"></script>
 {% endblock %}
