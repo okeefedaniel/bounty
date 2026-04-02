@@ -299,6 +299,7 @@ KEEL_AUDIT_LOG_MODEL = 'core.AuditLog'
 KEEL_NOTIFICATION_MODEL = 'core.Notification'
 KEEL_NOTIFICATION_PREFERENCE_MODEL = 'core.NotificationPreference'
 KEEL_NOTIFICATION_LOG_MODEL = 'core.NotificationLog'
+KEEL_NOTIFICATION_CATEGORIES = ['Bounty', 'Keel']
 KEEL_CSP_POLICY = {}
 
 # Site
