@@ -13,7 +13,11 @@ def _debug_login_test(request):
     try:
         from allauth.account import views as allauth_views
         view = allauth_views.LoginView.as_view(template_name='registration/login.html')
-        return view(request)
+        response = view(request)
+        # Force lazy TemplateResponse to render so we catch template errors
+        if hasattr(response, 'render'):
+            response.render()
+        return response
     except Exception:
         return HttpResponse(
             '<pre>' + traceback.format_exc() + '</pre>',
