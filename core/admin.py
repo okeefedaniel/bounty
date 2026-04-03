@@ -1,23 +1,12 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import AuditLog, Notification, User
-
-
-@admin.action(description='Approve selected users (activate)')
-def approve_users(modeladmin, request, queryset):
-    count = queryset.filter(is_active=False).update(is_active=True)
-    modeladmin.message_user(request, f'{count} user(s) approved.')
+from .models import AuditLog, BountyProfile, Notification
 
 
-@admin.register(User)
-class UserAdmin(BaseUserAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_active', 'date_joined')
-    list_filter = ('is_active', 'role', 'is_staff', 'is_beta_tester')
-    actions = [approve_users]
-    fieldsets = BaseUserAdmin.fieldsets + (
-        ('Bounty', {'fields': ('role', 'title', 'phone', 'organization_name', 'anthropic_api_key', 'is_beta_tester')}),
-    )
+@admin.register(BountyProfile)
+class BountyProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'organization_name')
+    search_fields = ('user__email', 'user__first_name', 'user__last_name')
 
 
 @admin.register(AuditLog)

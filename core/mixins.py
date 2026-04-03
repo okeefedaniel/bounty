@@ -9,14 +9,16 @@ class CoordinatorRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     """Restrict view to coordinators and admins."""
 
     def test_func(self):
-        return self.request.user.is_coordinator
+        role = getattr(self.request.user, 'role', '')
+        return role in ('admin', 'coordinator')
 
 
 class AnalystRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     """Restrict view to analysts, coordinators, and admins."""
 
     def test_func(self):
-        return self.request.user.is_analyst
+        role = getattr(self.request.user, 'role', '')
+        return role in ('admin', 'coordinator', 'analyst')
 
 
 class SortableListMixin:

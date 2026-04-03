@@ -51,6 +51,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context['new_match_count'] = OpportunityMatch.objects.filter(
             user=user, status=OpportunityMatch.Status.NEW,
         ).count()
-        context['has_ai_access'] = user.has_ai_access
+        from core.models import get_bounty_profile
+        context['has_ai_access'] = get_bounty_profile(user).has_ai_access
 
         return context

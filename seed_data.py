@@ -19,7 +19,8 @@ django.setup()
 from django.utils import timezone
 
 from allauth.account.models import EmailAddress
-from core.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
 from matching.models import MatchPreference, OpportunityMatch
 from opportunities.models import (
     FederalOpportunity,
@@ -33,17 +34,33 @@ now = timezone.now()
 print("Creating users...")
 
 
+from keel.accounts.models import ProductAccess
+from core.models import BountyProfile
+
+PRODUCT = 'bounty'
+
+
 def make_user(username, first, last, role, email, org_name=''):
     u, created = User.objects.get_or_create(
         username=username,
         defaults=dict(
-            first_name=first, last_name=last, role=role,
-            email=email, organization_name=org_name,
+            first_name=first, last_name=last,
+            email=email,
         ),
     )
     if created:
         u.set_password('demo2026!')
         u.save()
+    # Create/update ProductAccess for role
+    ProductAccess.objects.update_or_create(
+        user=u, product=PRODUCT,
+        defaults={'role': role, 'is_active': True},
+    )
+    # Create BountyProfile for org_name
+    if org_name:
+        profile, _ = BountyProfile.objects.get_or_create(user=u)
+        profile.organization_name = org_name
+        profile.save(update_fields=['organization_name'])
     if email:
         EmailAddress.objects.get_or_create(
             user=u, email=email,
@@ -55,10 +72,13 @@ def make_user(username, first, last, role, email, org_name=''):
 # System Admin (also the Django superuser)
 admin_user = User.objects.filter(username='admin').first()
 if admin_user:
-    admin_user.role = 'admin'
     admin_user.first_name = 'System'
     admin_user.last_name = 'Administrator'
     admin_user.save()
+    ProductAccess.objects.update_or_create(
+        user=admin_user, product=PRODUCT,
+        defaults={'role': 'admin', 'is_active': True},
+    )
     if admin_user.email:
         EmailAddress.objects.get_or_create(
             user=admin_user, email=admin_user.email,

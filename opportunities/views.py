@@ -9,7 +9,8 @@ from django.views import View
 from django.views.generic import DetailView, FormView, ListView, UpdateView
 
 from core.mixins import SortableListMixin
-from core.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
 from keel.search.views import chat_stream_view, instant_search_view
 
 from .chat import GrantChat

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'django.contrib.sites',
     # Keel (DockLabs shared platform)
+    'keel.accounts',
     'keel.core',
     'keel.security',
     'keel.notifications',
@@ -79,6 +80,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'keel.accounts.middleware.ProductAccessMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
@@ -116,7 +118,7 @@ DATABASES = {
     )
 }
 
-AUTH_USER_MODEL = 'core.User'
+AUTH_USER_MODEL = 'keel_accounts.KeelUser'
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -269,7 +271,7 @@ AUTHENTICATION_BACKENDS = [
 ACCOUNT_LOGIN_METHODS = {'username', 'email'}
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
-ACCOUNT_ADAPTER = 'core.adapters.ApprovalRequiredAdapter'
+ACCOUNT_ADAPTER = 'keel.core.sso.KeelAccountAdapter'
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
@@ -292,7 +294,8 @@ MFA_TOTP_ISSUER = 'Bounty'
 MFA_PASSKEY_LOGIN_ENABLED = True
 
 # Keel
-KEEL_PRODUCT_NAME = 'Bounty'
+KEEL_PRODUCT_NAME = 'bounty'
+KEEL_GATE_ACCESS = True
 KEEL_PRODUCT_ICON = 'bi-bullseye'
 KEEL_PRODUCT_SUBTITLE = 'Federal Grants Intelligence'
 KEEL_API_URL = os.environ.get('KEEL_API_URL', 'https://keel.docklabs.ai')

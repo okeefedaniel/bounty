@@ -41,4 +41,7 @@ urlpatterns = [
 
     # API
     path('api/v1/', include('api.urls')),
+
+    # Keel accounts admin
+    path('keel/', include('keel.accounts.urls')),
 ]

@@ -9,6 +9,7 @@ from django.views import View
 from django.views.generic import ListView, UpdateView
 
 from core.mixins import CoordinatorRequiredMixin
+from core.models import get_bounty_profile
 from opportunities.models import TrackedOpportunity
 
 from .forms import MatchPreferenceForm, StatePreferenceForm
@@ -25,7 +26,7 @@ class MatchPreferenceView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('matching:recommendations')
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated and not request.user.has_ai_access:
+        if request.user.is_authenticated and not get_bounty_profile(request.user).has_ai_access:
             messages.info(request, _('AI matching is not configured. Contact your administrator.'))
             return redirect('dashboard')
         return super().dispatch(request, *args, **kwargs)
@@ -79,7 +80,7 @@ class RecommendedMatchesView(LoginRequiredMixin, ListView):
         context['has_preferences'] = MatchPreference.objects.filter(
             user=self.request.user,
         ).exists()
-        context['has_ai_access'] = self.request.user.has_ai_access
+        context['has_ai_access'] = get_bounty_profile(self.request.user).has_ai_access
         return context
 
 

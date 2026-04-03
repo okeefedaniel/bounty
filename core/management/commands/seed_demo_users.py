@@ -1,7 +1,7 @@
 """Seed demo users for Bounty.
 
-Creates one user per DEMO_ROLES entry with username=role so Keel's
-demo_login_view can authenticate them.
+Creates one KeelUser + ProductAccess per DEMO_ROLES entry with username=role
+so Keel's demo_login_view can authenticate them.
 
 Usage:
     python manage.py seed_demo_users
@@ -10,10 +10,12 @@ Usage:
 import os
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
-from core.models import User
+from keel.accounts.models import ProductAccess
 
+User = get_user_model()
 DEMO_PASSWORD = os.environ.get('DEMO_PASSWORD', 'demo2026!')
 
 
@@ -26,6 +28,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         dry_run = options['dry_run']
         roles = getattr(settings, 'DEMO_ROLES', ['admin'])
+        product = getattr(settings, 'KEEL_PRODUCT_NAME', 'bounty').lower()
 
         for role in roles:
             display = role.replace('_', ' ').title()
@@ -41,13 +44,18 @@ class Command(BaseCommand):
                     'email': f'{role}@docklabs.ai',
                     'first_name': 'Demo',
                     'last_name': display,
-                    'role': role,
                     'is_staff': is_admin,
                     'is_superuser': is_admin,
                 },
             )
             user.set_password(DEMO_PASSWORD)
             user.save()
+
+            # Create or update ProductAccess
+            ProductAccess.objects.update_or_create(
+                user=user, product=product,
+                defaults={'role': role, 'is_active': True},
+            )
 
             action = 'Created' if created else 'Updated'
             self.stdout.write(self.style.SUCCESS(f'  {action}: {role} ({display})'))

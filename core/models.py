@@ -1,10 +1,8 @@
 import base64
 import hashlib
 import logging
-import uuid
 
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -14,57 +12,29 @@ from keel.notifications.models import AbstractNotificationPreference, AbstractNo
 logger = logging.getLogger(__name__)
 
 
-class User(AbstractUser):
-    """Custom user model for the Bounty platform."""
+class BountyProfile(models.Model):
+    """Product-specific fields for Bounty users.
 
-    class Role(models.TextChoices):
-        ADMIN = 'admin', _('Administrator')
-        COORDINATOR = 'coordinator', _('Federal Fund Coordinator')
-        ANALYST = 'analyst', _('Grants Analyst')
-        VIEWER = 'viewer', _('Viewer')
+    KeelUser handles identity (email, name, agency). BountyProfile stores
+    Bounty-specific data that doesn't belong on the shared user model.
+    """
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    role = models.CharField(
-        max_length=20,
-        choices=Role.choices,
-        default=Role.VIEWER,
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='bounty_profile',
     )
-    title = models.CharField(max_length=100, blank=True)
-    phone = models.CharField(max_length=20, blank=True)
     organization_name = models.CharField(max_length=255, blank=True)
-
     anthropic_api_key = models.CharField(
-        max_length=255,
-        blank=True,
-        default='',
+        max_length=255, blank=True, default='',
         verbose_name=_('Anthropic API Key'),
-        help_text=_('Personal Claude API key for AI-powered matching.'),
     )
-    is_beta_tester = models.BooleanField(
-        default=False,
-        verbose_name=_('Beta Tester'),
-        help_text=_('Beta testers can submit feedback directly from within the product.'),
-    )
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['last_name', 'first_name']
-        verbose_name = _('User')
-        verbose_name_plural = _('Users')
+        verbose_name = _('Bounty Profile')
+        verbose_name_plural = _('Bounty Profiles')
 
     def __str__(self):
-        full = self.get_full_name()
-        return full if full else self.username
-
-    @property
-    def is_coordinator(self):
-        return self.role in {self.Role.ADMIN, self.Role.COORDINATOR}
-
-    @property
-    def is_analyst(self):
-        return self.role in {self.Role.ADMIN, self.Role.COORDINATOR, self.Role.ANALYST}
+        return f"Profile: {self.user}"
 
     @staticmethod
     def _get_fernet():
@@ -87,12 +57,18 @@ class User(AbstractUser):
                 self.anthropic_api_key.encode()
             ).decode()
         except Exception:
-            logger.warning('Failed to decrypt API key for user %s', self.pk)
+            logger.warning('Failed to decrypt API key for user %s', self.user_id)
             return ''
 
     @property
     def has_ai_access(self):
         return bool(self.anthropic_api_key) or bool(getattr(settings, 'ANTHROPIC_API_KEY', ''))
+
+
+def get_bounty_profile(user):
+    """Get or create BountyProfile for a user."""
+    profile, _ = BountyProfile.objects.get_or_create(user=user)
+    return profile
 
 
 class AuditLog(AbstractAuditLog):
