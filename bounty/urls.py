@@ -1,32 +1,10 @@
-import traceback
-
 from django.contrib import admin
-from django.http import HttpResponse
 from django.urls import include, path
 from django.views.generic import RedirectView
 
 from core.views import DashboardView
 
-
-def _debug_login_test(request):
-    """Temporary: render login template with full error capture."""
-    try:
-        from allauth.account import views as allauth_views
-        view = allauth_views.LoginView.as_view(template_name='registration/login.html')
-        response = view(request)
-        # Force lazy TemplateResponse to render so we catch template errors
-        if hasattr(response, 'render'):
-            response.render()
-        return response
-    except Exception:
-        return HttpResponse(
-            '<pre>' + traceback.format_exc() + '</pre>',
-            content_type='text/plain',
-        )
-
-
 urlpatterns = [
-    path('debug-login/', _debug_login_test),
     path('admin/', admin.site.urls),
 
     # Portal (public pages)
