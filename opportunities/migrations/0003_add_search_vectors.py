@@ -7,7 +7,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('opportunities', '0002_federalopportunity_harbor_program_id'),
+        ('opportunities', '0001_initial'),
         ('keel_search', '0001_initial'),  # ensures pg_trgm extension exists
     ]
 

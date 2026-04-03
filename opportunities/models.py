@@ -7,6 +7,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from keel.core.models import AbstractStatusHistory
+
 
 class FederalOpportunity(models.Model):
     """Federal grant opportunity cached from the Simpler Grants.gov API."""
@@ -178,6 +180,21 @@ class TrackedOpportunity(models.Model):
 
     def __str__(self):
         return f"[{self.get_status_display()}] {self.federal_opportunity.title[:60]}"
+
+
+class TrackedOpportunityStatusHistory(AbstractStatusHistory):
+    """Immutable audit trail of tracked opportunity status transitions."""
+
+    tracked_opportunity = models.ForeignKey(
+        TrackedOpportunity, on_delete=models.CASCADE, related_name='status_history',
+    )
+
+    class Meta(AbstractStatusHistory.Meta):
+        verbose_name = _('Tracked Opportunity Status History')
+        verbose_name_plural = _('Tracked Opportunity Status Histories')
+
+    def __str__(self):
+        return f"{self.tracked_opportunity}: {self.old_status} -> {self.new_status}"
 
 
 class OpportunityCollaborator(models.Model):

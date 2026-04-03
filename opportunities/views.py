@@ -251,8 +251,28 @@ class TrackedOpportunityUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
     def form_valid(self, form):
+        from .workflows import TRACKED_OPPORTUNITY_WORKFLOW
+
+        old_status = self.get_object().status
+        new_status = form.cleaned_data.get('status', old_status)
+
+        if old_status != new_status:
+            # Save non-status fields first, then use workflow for status transition
+            obj = form.save(commit=False)
+            obj.status = old_status  # Restore — let workflow handle it
+            obj.save()
+            try:
+                TRACKED_OPPORTUNITY_WORKFLOW.execute(obj, new_status, user=self.request.user)
+            except Exception:
+                messages.error(self.request, _('Cannot transition from %(old)s to %(new)s.') % {
+                    'old': old_status, 'new': new_status,
+                })
+                return self.form_invalid(form)
+        else:
+            form.save()
+
         messages.success(self.request, _('Tracking details updated.'))
-        return super().form_valid(form)
+        return redirect(self.get_success_url())
 
     def get_success_url(self):
         return reverse('opportunities:tracked-detail', kwargs={'pk': self.object.pk})
