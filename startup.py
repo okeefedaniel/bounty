@@ -126,6 +126,18 @@ def main():
     run(f"{manage_cmd} fix_migration_history")
     run(f"{manage_cmd} migrate --noinput")
 
+    # Ensure django.contrib.sites has the correct Site record (required by allauth)
+    log("=== Configuring Site object ===")
+    try:
+        from django.contrib.sites.models import Site
+        domain = os.environ.get('SITE_DOMAIN', 'bounty.docklabs.ai')
+        site, created = Site.objects.update_or_create(
+            id=1, defaults={'domain': domain, 'name': 'Bounty'},
+        )
+        log(f"  Site {'created' if created else 'updated'}: {site.domain}")
+    except Exception as e:
+        log(f"  WARNING: Could not configure Site: {e}")
+
     # Post-migration tasks
     log("=== Running background startup tasks ===")
 

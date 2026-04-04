@@ -157,26 +157,33 @@
                     <h6 class="fw-bold"><i class="bi bi-bullseye me-2"></i>Bounty</h6>
                     <p class="small text-muted mb-0">
                         {% trans "Federal Funds Discovery" %}<br>
-                        {% trans "Powered by DockLabs" %}
+                        {% trans "Part of the DockLabs suite" %}
                     </p>
                 </div>
                 <div class="col-md-3">
                     <h6 class="fw-bold">{% trans "Quick Links" %}</h6>
                     <ul class="list-unstyled small">
                         <li><a href="{% url 'portal:opportunities' %}" class="text-muted text-decoration-none">{% trans "Federal Opportunities" %}</a></li>
+                        <li><a href="https://harbor.docklabs.ai" class="text-muted text-decoration-none">{% trans "Harbor" %}</a></li>
                     </ul>
                 </div>
                 <div class="col-md-3">
-                    <h6 class="fw-bold">{% trans "Related" %}</h6>
+                    <h6 class="fw-bold">{% trans "Contact" %}</h6>
                     <ul class="list-unstyled small text-muted">
-                        <li><a href="https://harbor.docklabs.ai" class="text-muted text-decoration-none"><i class="bi bi-bank2 me-1"></i>Harbor</a></li>
+                        <li><a href="mailto:info@docklabs.ai" class="text-muted text-decoration-none"><i class="bi bi-envelope me-1"></i> info@docklabs.ai</a></li>
                     </ul>
                 </div>
             </div>
             <hr class="my-3 border-secondary">
-            <p class="text-muted small mb-0 text-center">
-                &copy; {% now "Y" %} DockLabs. {% trans "All rights reserved." %}
-            </p>
+            <div class="d-flex justify-content-between align-items-center">
+                <p class="text-muted small mb-0">
+                    &copy; {% now "Y" %} DockLabs. {% trans "All rights reserved." %}
+                </p>
+                <p class="small mb-0">
+                    <a href="#" class="text-muted text-decoration-none me-3">{% trans "Privacy Policy" %}</a>
+                    <a href="#" class="text-muted text-decoration-none">{% trans "Terms of Service" %}</a>
+                </p>
+            </div>
         </div>
     </footer>
 
