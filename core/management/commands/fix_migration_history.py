@@ -53,12 +53,26 @@ class Command(BaseCommand):
                         date_joined timestamp with time zone NOT NULL DEFAULT NOW(),
                         phone varchar(30) NOT NULL DEFAULT '',
                         title varchar(100) NOT NULL DEFAULT '',
-                        department varchar(100) NOT NULL DEFAULT '',
+                        is_state_user boolean NOT NULL DEFAULT false,
+                        accepted_terms boolean NOT NULL DEFAULT false,
+                        accepted_terms_at timestamp with time zone,
                         agency_id uuid,
                         created_at timestamp with time zone NOT NULL DEFAULT NOW(),
                         updated_at timestamp with time zone NOT NULL DEFAULT NOW()
                     )
                 """)
+            else:
+                # Table exists but may be missing columns from earlier partial creation
+                for col, defn in [
+                    ('is_state_user', 'boolean NOT NULL DEFAULT false'),
+                    ('accepted_terms', 'boolean NOT NULL DEFAULT false'),
+                    ('accepted_terms_at', 'timestamp with time zone'),
+                ]:
+                    try:
+                        cursor.execute(f"ALTER TABLE keel_user ADD COLUMN {col} {defn}")
+                        self.stdout.write(f'  Added missing column: {col}')
+                    except Exception:
+                        pass  # Column already exists
                 # Create the M2M tables for groups and permissions
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS keel_user_groups (
