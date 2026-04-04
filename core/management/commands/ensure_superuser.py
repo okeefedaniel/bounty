@@ -44,6 +44,18 @@ class Command(BaseCommand):
         user.is_superuser = True
         user.save()
 
+        # Ensure ProductAccess exists for this product
+        try:
+            from keel.accounts.models import ProductAccess
+            product = os.environ.get('KEEL_PRODUCT_NAME', 'bounty').lower()
+            ProductAccess.objects.get_or_create(
+                user=user,
+                product=product,
+                defaults={'role': 'admin', 'is_active': True},
+            )
+        except Exception:
+            pass  # ProductAccess table may not exist yet
+
         if created:
             self.stdout.write(self.style.SUCCESS(f'Created superuser "{username}"'))
         else:
