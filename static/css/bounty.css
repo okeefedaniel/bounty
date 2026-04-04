@@ -1,41 +1,16 @@
 /* ============================================
    Bounty — Federal Funds Discovery Styles
    Extends docklabs.css with Bounty-only components.
+   Shared classes (.opportunity-card, .badge-grant-type,
+   .badge-watching/preparing/applied/awarded/declined)
+   now live in Keel's docklabs.css.
    ============================================ */
 
-/* -- Federal Opportunity Cards -- */
-.opportunity-card {
-    border-left: 4px solid var(--ct-blue);
-    margin-bottom: 1rem;
-}
-.opportunity-card .deadline {
-    color: var(--ct-red);
-    font-weight: 600;
-}
-.opportunity-card .funding {
-    color: var(--ct-green);
-    font-weight: 700;
-    font-size: 1.1rem;
-}
-
-/* -- Opportunity Status Badges -- */
+/* -- Opportunity Status Badges (Bounty only) -- */
 .badge-posted  { background-color: var(--ct-green); }
 .badge-forecasted { background-color: var(--ct-pale-blue); color: var(--ct-dark-blue); }
 .badge-closed  { background-color: #6C757D; }
 .badge-archived { background-color: #6C757D; }
-
-/* -- Grant Type Badge -- */
-.badge-grant-type {
-    background-color: var(--ct-pale-blue);
-    color: var(--ct-dark-blue) !important;
-}
-
-/* -- Tracking Status Badges -- */
-.badge-watching   { background-color: #6C757D; }
-.badge-preparing  { background-color: var(--ct-yellow); color: var(--ct-dark-gray); }
-.badge-applied    { background-color: var(--ct-blue); }
-.badge-awarded    { background-color: var(--ct-green); }
-.badge-declined   { background-color: var(--ct-red); }
 
 /* -- Grant Match Card -- */
 .grant-card {
