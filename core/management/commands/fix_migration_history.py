@@ -229,4 +229,15 @@ class Command(BaseCommand):
                 "ON CONFLICT DO NOTHING"
             )
 
+            # Remove stale core migrations so Django re-applies them
+            # (core.0001 was rewritten for KeelUser but already marked as applied)
+            cursor.execute(
+                "DELETE FROM django_migrations WHERE app='core' "
+                "AND name NOT IN (SELECT name FROM django_migrations WHERE app='core' "
+                "AND name='0002_ensure_keel_accounts')"
+            )
+            # Simpler: just delete all core migrations so they re-run
+            cursor.execute("DELETE FROM django_migrations WHERE app='core'")
+            self.stdout.write('Cleared core migration history for re-application.')
+
         self.stdout.write(self.style.SUCCESS('All keel_accounts tables ensured. Running migrate next.'))
