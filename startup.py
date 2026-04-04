@@ -122,21 +122,9 @@ def main():
 
     # Run migrations
     log("=== Running migrations ===")
-    # Fix InconsistentMigrationHistory: the KeelUser migration rewrote core.0001
-    # to depend on keel_accounts, but the old core.0001 was already applied.
-    # Step 1: Fix the inconsistency by faking keel_accounts as applied
-    # Step 2: Unapply the fake, then apply for real to create tables
-    # Step 3: Run all remaining migrations
-    if not run(f"{manage_cmd} migrate --noinput"):
-        log("Migration failed — attempting to fix inconsistent history...")
-        run(f"{manage_cmd} migrate keel_accounts --fake --noinput")
-        run(f"{manage_cmd} migrate keel_search --fake --noinput")
-        # Now the consistency check passes; unapply fakes and apply for real
-        run(f"{manage_cmd} migrate keel_accounts zero --fake --noinput")
-        run(f"{manage_cmd} migrate keel_search zero --fake --noinput")
-        run(f"{manage_cmd} migrate keel_accounts --noinput")
-        run(f"{manage_cmd} migrate keel_search --noinput")
-        run(f"{manage_cmd} migrate --noinput")
+    # Fix InconsistentMigrationHistory if needed (one-time, idempotent)
+    run(f"{manage_cmd} fix_migration_history")
+    run(f"{manage_cmd} migrate --noinput")
 
     # Post-migration tasks
     log("=== Running background startup tasks ===")
