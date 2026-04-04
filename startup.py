@@ -124,7 +124,7 @@ def main():
     log("=== Running migrations ===")
     # Fix InconsistentMigrationHistory if needed (one-time, idempotent)
     run(f"{manage_cmd} fix_migration_history")
-    run(f"{manage_cmd} migrate --fake-initial --noinput")
+    run(f"{manage_cmd} migrate --noinput")
 
     # Post-migration tasks
     log("=== Running background startup tasks ===")

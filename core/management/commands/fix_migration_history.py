@@ -229,15 +229,21 @@ class Command(BaseCommand):
                 "ON CONFLICT DO NOTHING"
             )
 
-            # Remove stale core migrations so Django re-applies them
-            # (core.0001 was rewritten for KeelUser but already marked as applied)
-            cursor.execute(
-                "DELETE FROM django_migrations WHERE app='core' "
-                "AND name NOT IN (SELECT name FROM django_migrations WHERE app='core' "
-                "AND name='0002_ensure_keel_accounts')"
-            )
-            # Simpler: just delete all core migrations so they re-run
-            cursor.execute("DELETE FROM django_migrations WHERE app='core'")
-            self.stdout.write('Cleared core migration history for re-application.')
+            # Create missing core tables that the rewritten core.0001 would have created
+            _ensure_table(cursor, 'core_bountyprofile', """
+                CREATE TABLE core_bountyprofile (
+                    id bigserial PRIMARY KEY,
+                    anthropic_api_key varchar(255) NOT NULL DEFAULT '',
+                    organization_name varchar(255) NOT NULL DEFAULT '',
+                    user_id uuid NOT NULL UNIQUE REFERENCES keel_user(id) ON DELETE CASCADE
+                )
+            """, self.stdout)
+
+            # Re-record core migrations as applied (they may have been cleared)
+            for name in ['0001_initial', '0002_ensure_keel_accounts']:
+                cursor.execute(
+                    "INSERT INTO django_migrations (app, name, applied) "
+                    "VALUES ('core', %s, NOW()) ON CONFLICT DO NOTHING", [name]
+                )
 
         self.stdout.write(self.style.SUCCESS('All keel_accounts tables ensured. Running migrate next.'))
