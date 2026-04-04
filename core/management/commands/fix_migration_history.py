@@ -26,9 +26,8 @@ class Command(BaseCommand):
             )
             count = cursor.fetchone()[0]
 
-            if count > 0:
-                self.stdout.write('keel_accounts.0001_initial already recorded, skipping.')
-                return
+            # Always check table/columns even if migration is recorded
+            # (previous deploy may have created table with missing columns)
 
             # Check if keel_user table exists
             cursor.execute(
