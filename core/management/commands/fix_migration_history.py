@@ -68,11 +68,13 @@ class Command(BaseCommand):
                     ('accepted_terms', 'boolean NOT NULL DEFAULT false'),
                     ('accepted_terms_at', 'timestamp with time zone'),
                 ]:
-                    try:
+                    cursor.execute(
+                        "SELECT EXISTS (SELECT FROM information_schema.columns "
+                        "WHERE table_name='keel_user' AND column_name=%s)", [col]
+                    )
+                    if not cursor.fetchone()[0]:
                         cursor.execute(f"ALTER TABLE keel_user ADD COLUMN {col} {defn}")
                         self.stdout.write(f'  Added missing column: {col}')
-                    except Exception:
-                        pass  # Column already exists
                 # Create the M2M tables for groups and permissions
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS keel_user_groups (
