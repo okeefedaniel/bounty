@@ -1,10 +1,26 @@
+import traceback
+
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import include, path
 from django.views.generic import RedirectView
 
 from core.views import DashboardView
 
+
+def _dbg_login(request):
+    try:
+        from allauth.account import views as av
+        resp = av.LoginView.as_view(template_name='registration/login.html')(request)
+        if hasattr(resp, 'render'):
+            resp.render()
+        return resp
+    except Exception:
+        return HttpResponse('<pre>' + traceback.format_exc() + '</pre>', content_type='text/plain')
+
+
 urlpatterns = [
+    path('dbg/', _dbg_login),
     path('admin/', admin.site.urls),
 
     # Portal (public pages)
