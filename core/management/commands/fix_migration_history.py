@@ -62,19 +62,23 @@ class Command(BaseCommand):
                     )
                 """)
             else:
+                self.stdout.write('keel_user table exists, checking for missing columns...')
                 # Table exists but may be missing columns from earlier partial creation
-                for col, defn in [
+                missing_cols = [
                     ('is_state_user', 'boolean NOT NULL DEFAULT false'),
                     ('accepted_terms', 'boolean NOT NULL DEFAULT false'),
                     ('accepted_terms_at', 'timestamp with time zone'),
-                ]:
+                ]
+                for col, defn in missing_cols:
                     cursor.execute(
-                        "SELECT EXISTS (SELECT FROM information_schema.columns "
+                        "SELECT EXISTS (SELECT 1 FROM information_schema.columns "
                         "WHERE table_name='keel_user' AND column_name=%s)", [col]
                     )
-                    if not cursor.fetchone()[0]:
-                        cursor.execute(f"ALTER TABLE keel_user ADD COLUMN {col} {defn}")
-                        self.stdout.write(f'  Added missing column: {col}')
+                    exists = cursor.fetchone()[0]
+                    self.stdout.write(f'  Column {col}: {"exists" if exists else "MISSING"}')
+                    if not exists:
+                        cursor.execute(f"ALTER TABLE keel_user ADD COLUMN IF NOT EXISTS {col} {defn}")
+                        self.stdout.write(self.style.SUCCESS(f'  -> Added {col}'))
                 # Create the M2M tables for groups and permissions
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS keel_user_groups (
