@@ -1,0 +1,19 @@
+{% extends "keel/layouts/public.html" %}
+{% load static i18n %}
+
+{% block title %}Bounty | {% block page_title %}{% trans "Federal Funds Discovery" %}{% endblock %}{% endblock %}
+{% block html_lang %}{{ LANGUAGE_CODE }}{% endblock %}
+
+{% block sidebar_brand_icon %}bi-bullseye{% endblock %}
+{% block sidebar_brand_name %}Bounty{% endblock %}
+{% block public_home_url %}{% url 'portal:home' %}{% endblock %}
+{% block login_url %}{% url 'core:login' %}{% endblock %}
+{% block dashboard_url %}{% url 'dashboard' %}{% endblock %}
+
+{% block public_nav %}
+<a class="tb-btn" href="{% url 'portal:opportunities' %}">{% trans "Opportunities" %}</a>
+{% endblock %}
+
+{% block product_css %}
+<link href="{% static 'css/bounty.css' %}" rel="stylesheet">
+{% endblock %}

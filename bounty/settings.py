@@ -101,6 +101,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'keel.core.context_processors.site_context',
+                'keel.core.context_processors.fleet_context',
             ],
         },
     },
@@ -294,7 +295,8 @@ MFA_TOTP_ISSUER = 'Bounty'
 MFA_PASSKEY_LOGIN_ENABLED = True
 
 # Keel
-KEEL_PRODUCT_NAME = 'bounty'
+KEEL_PRODUCT_NAME = 'Bounty'
+KEEL_PRODUCT_CODE = 'bounty'
 KEEL_GATE_ACCESS = True
 KEEL_PRODUCT_ICON = 'bi-bullseye'
 KEEL_PRODUCT_SUBTITLE = 'Federal Grants Intelligence'
@@ -306,6 +308,13 @@ KEEL_NOTIFICATION_PREFERENCE_MODEL = 'core.NotificationPreference'
 KEEL_NOTIFICATION_LOG_MODEL = 'core.NotificationLog'
 KEEL_NOTIFICATION_CATEGORIES = ['Bounty', 'Keel']
 KEEL_CSP_POLICY = {}
+KEEL_FLEET_PRODUCTS = [
+    {'name': 'Helm', 'label': 'Helm', 'code': 'helm', 'url': '/'},
+    {'name': 'Beacon', 'label': 'Beacon', 'code': 'beacon', 'url': '/'},
+    {'name': 'Harbor', 'label': 'Harbor', 'code': 'harbor', 'url': '/'},
+    {'name': 'Bounty', 'label': 'Bounty', 'code': 'bounty', 'url': '/'},
+    {'name': 'Lookout', 'label': 'Lookout', 'code': 'lookout', 'url': '/'},
+]
 
 # Site
 SITE_NAME = 'Bounty'

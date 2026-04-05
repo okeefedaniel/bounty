@@ -1,9 +1,10 @@
 /* ============================================
    Bounty — Federal Funds Discovery Styles
-   Extends docklabs.css with Bounty-only components.
+   Warm Harbor v2 — extends docklabs-v2.css
+   with Bounty-only components.
    Shared classes (.opportunity-card, .badge-grant-type,
    .badge-watching/preparing/applied/awarded/declined)
-   now live in Keel's docklabs.css.
+   now live in Keel's docklabs-v2.css.
    ============================================ */
 
 /* -- Opportunity Status Badges (Bounty only) -- */
