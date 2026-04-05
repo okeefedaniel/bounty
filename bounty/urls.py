@@ -3,8 +3,10 @@ from django.urls import include, path
 from django.views.generic import RedirectView
 
 from core.views import DashboardView
+from keel.core.demo import demo_login_view
 
 urlpatterns = [
+    path('demo-login/', demo_login_view, name='demo_login'),
     path('admin/', admin.site.urls),
 
     # Portal (public pages)
