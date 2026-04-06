@@ -30,6 +30,7 @@ class BountyProfile(models.Model):
     )
 
     class Meta:
+        db_table = 'bounty_core_bountyprofile'
         verbose_name = _('Bounty Profile')
         verbose_name_plural = _('Bounty Profiles')
 
@@ -75,6 +76,7 @@ class AuditLog(AbstractAuditLog):
     """Bounty audit log."""
 
     class Meta(AbstractAuditLog.Meta):
+        db_table = 'bounty_core_auditlog'
         verbose_name = _('Audit Log')
         verbose_name_plural = _('Audit Logs')
 
@@ -83,6 +85,7 @@ class Notification(AbstractNotification):
     """Bounty in-app notification."""
 
     class Meta(AbstractNotification.Meta):
+        db_table = 'bounty_core_notification'
         verbose_name = _('Notification')
         verbose_name_plural = _('Notifications')
 
@@ -91,6 +94,7 @@ class NotificationPreference(AbstractNotificationPreference):
     """Per-user notification channel preferences."""
 
     class Meta(AbstractNotificationPreference.Meta):
+        db_table = 'bounty_core_notificationpreference'
         verbose_name = _('Notification Preference')
         verbose_name_plural = _('Notification Preferences')
 
@@ -99,5 +103,6 @@ class NotificationLog(AbstractNotificationLog):
     """Notification delivery log."""
 
     class Meta(AbstractNotificationLog.Meta):
+        db_table = 'bounty_core_notificationlog'
         verbose_name = _('Notification Log')
         verbose_name_plural = _('Notification Logs')

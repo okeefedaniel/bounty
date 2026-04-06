@@ -10,7 +10,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0001_initial'),
+        ('bounty_core', '0001_initial'),
         ('keel_accounts', '0001_initial'),
     ]
 
