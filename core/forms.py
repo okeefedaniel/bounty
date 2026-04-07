@@ -4,27 +4,13 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.utils.translation import gettext_lazy as _lazy
 
 from .models import BountyProfile
+from keel.accounts.forms import LoginForm  # noqa: F401  (shared across DockLabs suite)
 
 User = get_user_model()
 
 
-class LoginForm(AuthenticationForm):
-    """Styled login form."""
-
-    username = forms.CharField(
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': _lazy('Username'),
-            'autofocus': True,
-        }),
-    )
-    password = forms.CharField(
-        widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': _lazy('Password'),
-        }),
-    )
-
+# LoginForm is now shared in Keel for suite-wide consistency.
+# See keel/accounts/forms.py for the canonical definition.
 
 class ProfileForm(forms.ModelForm):
     organization_name = forms.CharField(max_length=255, required=False)
