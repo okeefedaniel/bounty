@@ -1,143 +1,37 @@
-{% extends "base_public.html" %}
-{% load i18n %}
-{% load humanize %}
+{% extends "keel/layouts/landing.html" %}
+{% load static %}
 
-{% block content %}
-<!-- Hero Section -->
-<section class="hero-section">
-    <div class="container text-center">
-        <h1 class="mb-3">{% trans "Federal Funds Discovery" %}</h1>
-        <p class="lead mb-4 mx-auto" style="max-width: 700px;">
-            {% trans "Discover, track, and collaborate on federal grant opportunities from Grants.gov. AI-powered matching finds the best opportunities for your organization." %}
-        </p>
-        <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <a href="{% url 'portal:opportunities' %}" class="btn btn-light btn-lg px-4">
-                <i class="bi bi-globe me-2"></i>{% trans "Browse Opportunities" %}
-            </a>
-            {% if user.is_authenticated %}
-            <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-lg px-4">
-                <i class="bi bi-speedometer2 me-2"></i>{% trans "Go to Dashboard" %}
-            </a>
-            {% else %}
-            <a href="{% url 'core:login' %}" class="btn btn-outline-light btn-lg px-4">
-                <i class="bi bi-box-arrow-in-right me-2"></i>{% trans "Log In" %}
-            </a>
-            {% endif %}
-        </div>
-    </div>
-</section>
+{% block landing_hero_description %}
+Federal grants intelligence for Connecticut state agencies. Discover, track,
+and act on federal funding opportunities — with AI-powered matching and
+direct integration to Harbor for state grant programs.
+{% endblock %}
 
-<!-- Stats Bar -->
-<section class="stats-bar py-4">
-    <div class="container">
-        <div class="row text-center">
-            <div class="col-md-4 mb-3 mb-md-0 text-center">
-                <div class="stat-value">{{ open_federal_count|default:"0" }}</div>
-                <div class="stat-label">{% trans "Open Opportunities" %}</div>
-            </div>
-            <div class="col-md-4 mb-3 mb-md-0 text-center">
-                <div class="stat-value">{{ total_agencies|default:"50+" }}</div>
-                <div class="stat-label">{% trans "Federal Agencies" %}</div>
-            </div>
-            <div class="col-md-4 text-center">
-                <div class="stat-value">AI</div>
-                <div class="stat-label">{% trans "Powered Matching" %}</div>
-            </div>
-        </div>
-    </div>
-</section>
+{% block dashboard_url %}{% url 'dashboard' %}{% endblock %}
 
-<!-- Recent Opportunities -->
-<section class="py-5">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold mb-0">{% trans "Recent Opportunities" %}</h2>
-            <a href="{% url 'portal:opportunities' %}" class="btn btn-outline-primary">
-                {% trans "View All" %} <i class="bi bi-arrow-right ms-1"></i>
-            </a>
-        </div>
+{% block landing_hero_actions %}
+<a href="{% url 'portal:opportunities' %}" class="btn btn-light btn-lg px-4">
+  <i class="bi bi-search me-2"></i>Browse Opportunities
+</a>
+{% if user.is_authenticated %}
+<a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-lg px-4">
+  <i class="bi bi-speedometer2 me-2"></i>Go to Dashboard
+</a>
+{% else %}
+<a href="{% url 'account_login' %}" class="btn btn-outline-light btn-lg px-4">
+  <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+</a>
+{% endif %}
+{% endblock %}
 
-        {% if recent_opportunities %}
-        <div class="row g-4">
-            {% for opp in recent_opportunities|slice:":6" %}
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="badge badge-grant-type">{{ opp.agency_code }}</span>
-                            {% if opp.is_open %}
-                            <span class="badge bg-success">{% trans "Open" %}</span>
-                            {% endif %}
-                        </div>
-                        <h5 class="card-title fw-bold">{{ opp.title|truncatewords:12 }}</h5>
-                        <p class="text-muted small mb-2">
-                            <i class="bi bi-building me-1"></i>{{ opp.agency_name }}
-                        </p>
-                        <div class="mb-3">
-                            <span class="fw-semibold small">{{ opp.funding_range_display }}</span>
-                        </div>
-                        <div class="mt-auto">
-                            <span class="text-muted small">
-                                <i class="bi bi-calendar-event me-1"></i>
-                                {% if opp.close_date %}
-                                    {% trans "Closes:" %} {{ opp.close_date|date:"M d, Y" }}
-                                {% else %}
-                                    {% trans "Close date: N/A" %}
-                                {% endif %}
-                            </span>
-                            <a href="{% url 'portal:opportunity-detail' pk=opp.pk %}"
-                               class="btn btn-outline-primary btn-sm mt-3 w-100">
-                                {% trans "View Details" %} <i class="bi bi-arrow-right ms-1"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="text-center py-5 text-muted">
-            <i class="bi bi-inbox display-4 d-block mb-3"></i>
-            <p class="lead">{% trans "No opportunities available yet. Check back soon." %}</p>
-        </div>
-        {% endif %}
-    </div>
-</section>
+{% block landing_stats %}
+{% include "keel/landing/_stats_bar.html" with stats=landing_stats %}
+{% endblock %}
 
-<!-- How It Works -->
-<section class="bg-light py-5">
-    <div class="container">
-        <h2 class="text-center fw-bold mb-5">{% trans "How It Works" %}</h2>
-        <div class="row g-4 text-center">
-            <div class="col-md-3">
-                <div class="step-icon">1</div>
-                <h5 class="fw-bold">{% trans "Browse" %}</h5>
-                <p class="text-muted">
-                    {% trans "Explore thousands of federal funding opportunities synced from Grants.gov." %}
-                </p>
-            </div>
-            <div class="col-md-3">
-                <div class="step-icon">2</div>
-                <h5 class="fw-bold">{% trans "Match" %}</h5>
-                <p class="text-muted">
-                    {% trans "Set your preferences and let AI find the most relevant opportunities for you." %}
-                </p>
-            </div>
-            <div class="col-md-3">
-                <div class="step-icon">3</div>
-                <h5 class="fw-bold">{% trans "Track" %}</h5>
-                <p class="text-muted">
-                    {% trans "Track promising opportunities through your pipeline with collaborators." %}
-                </p>
-            </div>
-            <div class="col-md-3">
-                <div class="step-icon">4</div>
-                <h5 class="fw-bold">{% trans "Push to Harbor" %}</h5>
-                <p class="text-muted">
-                    {% trans "Won a federal award? Push it to Harbor to manage the associated state grant program." %}
-                </p>
-            </div>
-        </div>
-    </div>
-</section>
+{% block landing_features %}
+{% include "keel/landing/_features.html" with title="Federal Grants Intelligence" features=landing_features %}
+{% endblock %}
+
+{% block landing_how_it_works %}
+{% include "keel/landing/_how_it_works.html" with steps=landing_steps %}
 {% endblock %}

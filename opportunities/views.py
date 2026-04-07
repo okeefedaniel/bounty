@@ -106,29 +106,50 @@ def opportunity_chat(request):
     return chat_stream_view(request, _grant_chat)
 
 
-class HomeView(ListView):
-    """Public landing page — redirect logged-in users to dashboard."""
+from keel.core.views import LandingView
 
-    model = FederalOpportunity
+
+class HomeView(LandingView):
+    """Public landing page — Keel-shared landing layout."""
+
     template_name = 'portal/home.html'
-    context_object_name = 'recent_opportunities'
-    paginate_by = 6
+    authenticated_redirect = 'dashboard'
 
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return redirect('dashboard')
-        return super().dispatch(request, *args, **kwargs)
+    features = [
+        {'icon': 'bi-bullseye', 'title': 'Federal Discovery',
+         'description': 'Browse 2,000+ active federal funding opportunities sourced directly from grants.gov.',
+         'color': 'blue'},
+        {'icon': 'bi-stars', 'title': 'AI Matching',
+         'description': 'Claude-powered relevance scoring matches opportunities to your agency priorities and tracked keywords.',
+         'color': 'teal'},
+        {'icon': 'bi-arrow-up-right-circle', 'title': 'Push to Harbor',
+         'description': 'Track promising opportunities and push them straight to Harbor as draft grant programs.',
+         'color': 'yellow'},
+    ]
 
-    def get_queryset(self):
-        return FederalOpportunity.objects.filter(
+    steps = [
+        {'title': 'Browse', 'description': 'Search federal grants by agency, category, deadline, or keyword.'},
+        {'title': 'Match', 'description': 'AI scores each opportunity against your tracked priorities.'},
+        {'title': 'Track', 'description': 'Save opportunities to your watchlist and collaborate with your team.'},
+        {'title': 'Push to Harbor', 'description': 'Promote a federal opportunity into a Harbor grant program with one click.'},
+    ]
+
+    def get_landing_stats(self):
+        open_count = FederalOpportunity.objects.filter(
             opportunity_status=FederalOpportunity.OpportunityStatus.POSTED,
-        ).order_by('-post_date')[:6]
+        ).count()
+        return [
+            {'value': str(open_count), 'label': 'Open Opportunities'},
+            {'value': '50+', 'label': 'Federal Agencies'},
+            {'value': 'AI', 'label': 'Powered'},
+            {'value': 'Harbor', 'label': 'Integration'},
+        ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['open_federal_count'] = FederalOpportunity.objects.filter(
+        context['recent_opportunities'] = FederalOpportunity.objects.filter(
             opportunity_status=FederalOpportunity.OpportunityStatus.POSTED,
-        ).count()
+        ).order_by('-post_date')[:6]
         return context
 
 
