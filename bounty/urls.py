@@ -1,9 +1,12 @@
 from django.contrib import admin
+from django.contrib.auth.views import LoginView
 from django.urls import include, path
 from django.views.generic import RedirectView
 
+from core.forms import LoginForm
 from core.views import DashboardView
 from keel.core.demo import demo_login_view
+from keel.core.views import SuiteLogoutView
 
 urlpatterns = [
     path('demo-login/', demo_login_view, name='demo_login'),
@@ -14,6 +17,14 @@ urlpatterns = [
 
     # Auth
     path('auth/', include('core.urls')),
+    # Custom login/logout views using our styled templates (before allauth)
+    # so /accounts/login/ uses the shared keel LoginForm (which sets
+    # form-control on its widgets) instead of allauth's default form.
+    path('accounts/login/', LoginView.as_view(
+        template_name='account/login.html',
+        authentication_form=LoginForm,
+    ), name='account_login'),
+    path('accounts/logout/', SuiteLogoutView.as_view(), name='account_logout'),
     path('accounts/', include('allauth.urls')),
 
     # Convenience named URL for the "Sign in with Microsoft" button
