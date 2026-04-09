@@ -110,17 +110,17 @@ def bounty_helm_feed(request):
     preparing_opps = (
         TrackedOpportunity.objects
         .filter(status='preparing')
-        .select_related('opportunity')
+        .select_related('federal_opportunity')
         .order_by('-updated_at')[:5]
     )
     for tracked in preparing_opps:
         action_items.append({
             'id': f'bounty-prep-{tracked.pk}',
             'type': 'submission',
-            'title': f'Prepare: {tracked.opportunity.title[:80]}',
+            'title': f'Prepare: {tracked.federal_opportunity.title[:80]}',
             'description': 'Application in preparation',
             'priority': 'medium',
-            'due_date': tracked.opportunity.close_date.isoformat() if tracked.opportunity.close_date else '',
+            'due_date': tracked.federal_opportunity.close_date.isoformat() if tracked.federal_opportunity.close_date else '',
             'assigned_to_role': 'federal_coordinator',
             'deep_link': f'{base_url}/tracked/{tracked.pk}/',
             'created_at': tracked.created_at.isoformat() if tracked.created_at else '',
