@@ -7,6 +7,7 @@ from core.forms import LoginForm
 from core.views import DashboardView
 from keel.core.demo import demo_login_view
 from keel.core.views import SuiteLogoutView
+from keel.core.search_views import search_view
 
 urlpatterns = [
     path('demo-login/', demo_login_view, name='demo_login'),
@@ -56,5 +57,6 @@ urlpatterns = [
     path('api/v1/', include('api.urls')),
 
     # Keel accounts admin
+    path('search/', search_view, name='search'),
     path('keel/', include('keel.accounts.urls')),
 ]
