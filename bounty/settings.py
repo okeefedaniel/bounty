@@ -169,7 +169,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 # Login/Logout
-LOGIN_URL = '/auth/login/'
+LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
@@ -334,6 +334,7 @@ KEEL_PRODUCT_ICON = 'bi-bullseye'
 KEEL_PRODUCT_SUBTITLE = 'Federal Grants Intelligence'
 KEEL_API_URL = os.environ.get('KEEL_API_URL', 'https://keel.docklabs.ai')
 KEEL_API_KEY = os.environ.get('KEEL_API_KEY', '')
+HELM_FEED_API_KEY = os.environ.get('HELM_FEED_API_KEY', '')
 KEEL_AUDIT_LOG_MODEL = 'bounty_core.AuditLog'
 KEEL_NOTIFICATION_MODEL = 'bounty_core.Notification'
 KEEL_NOTIFICATION_PREFERENCE_MODEL = 'bounty_core.NotificationPreference'
