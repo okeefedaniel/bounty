@@ -8,12 +8,15 @@ from django.views.generic import TemplateView
 from core.forms import LoginForm
 from core.views import DashboardView
 from keel.core.demo import demo_login_view
-from keel.core.views import SuiteLogoutView
+from keel.core.views import SuiteLogoutView, favicon_view, health_check, robots_txt
 from keel.core.search_views import search_view
 
 urlpatterns = [
     # Support (shared keel page — linked from 500.html)
     path('support/', TemplateView.as_view(template_name='keel/support.html'), name='support'),
+    path('health/', health_check, name='health_check'),
+    path('robots.txt', robots_txt, name='robots_txt'),
+    path('favicon.ico', favicon_view, name='favicon'),
     path('demo-login/', demo_login_view, name='demo_login'),
     path('admin/', admin.site.urls),
 

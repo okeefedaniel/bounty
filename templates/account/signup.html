@@ -5,71 +5,8 @@
 
 {% block main_class %}container py-5{% endblock %}
 
-{% block extra_css %}
-<style>
-    .signup-card { max-width: 500px; margin: 0 auto; }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="signup-card">
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-4 p-md-5">
-            <div class="text-center mb-4">
-                <div class="mb-3">
-                    <i class="bi bi-bullseye display-4 text-primary"></i>
-                </div>
-                <h2 class="fw-bold">{% trans "Create Account" %}</h2>
-                <p class="text-muted">{% trans "Request access to Bounty" %}</p>
-            </div>
-
-            <div class="alert alert-info small">
-                <i class="bi bi-info-circle me-1"></i>
-                {% trans "New accounts require administrator approval before you can log in." %}
-            </div>
-
-            <form method="post">
-                {% csrf_token %}
-
-                {% if form.non_field_errors %}
-                <div class="alert alert-danger" role="alert">
-                    {% for error in form.non_field_errors %}
-                    <div>{{ error }}</div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                {% for field in form %}
-                <div class="mb-3">
-                    <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
-                        {{ field.label }}
-                    </label>
-                    {{ field }}
-                    {% if field.help_text %}
-                    <div class="form-text">{{ field.help_text }}</div>
-                    {% endif %}
-                    {% if field.errors %}
-                    <div class="invalid-feedback d-block">
-                        {% for error in field.errors %}{{ error }}{% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
-                {% endfor %}
-
-                <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="bi bi-person-plus me-2"></i>{% trans "Request Access" %}
-                    </button>
-                </div>
-            </form>
-
-            <div class="text-center mt-3">
-                <p class="mb-0 small text-muted">
-                    {% trans "Already have an account?" %}
-                    <a href="{% url 'core:login' %}">{% trans "Log in" %}</a>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
+{% trans "New accounts require administrator approval before you can log in." as intro %}
+{% trans "Request Access" as submit %}
+{% include "keel/register_card.html" with intro_alert=intro submit_label=submit %}
 {% endblock %}

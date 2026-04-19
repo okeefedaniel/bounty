@@ -107,7 +107,7 @@
 <li><hr class="dropdown-divider"></li>
 {% endif %}
 <li>
-  <form method="post" action="{% url 'core:logout' %}">
+  <form method="post" action="{% url 'account_logout' %}">
     {% csrf_token %}
     <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right me-2"></i>{% trans "Log Out" %}</button>
   </form>
