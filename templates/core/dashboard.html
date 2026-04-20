@@ -14,6 +14,24 @@
         </p>
         {% endif %}
     </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'portal:opportunities' %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-globe me-1"></i>{% trans "Browse Opportunities" %}
+        </a>
+        {% if has_ai_access %}
+        <a href="{% url 'matching:recommendations' %}" class="btn btn-sm btn-outline-primary" title="{% trans 'AI Recommendations' %}">
+            <i class="bi bi-stars"></i>
+        </a>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="{% trans 'More actions' %}">
+                <i class="bi bi-three-dots"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{% url 'matching:preferences' %}"><i class="bi bi-gear me-2"></i>{% trans "Matching Preferences" %}</a></li>
+            </ul>
+        </div>
+        {% endif %}
+    </div>
 </div>
 
 {# -- Stat Cards -- #}
@@ -202,25 +220,6 @@
         </div>
         {% endif %}
 
-        {# Quick Actions #}
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-lightning me-2"></i>{% trans "Quick Actions" %}
-            </div>
-            <div class="card-body d-grid gap-2">
-                <a href="{% url 'portal:opportunities' %}" class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-globe me-1"></i>{% trans "Browse Opportunities" %}
-                </a>
-                {% if has_ai_access %}
-                <a href="{% url 'matching:recommendations' %}" class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-stars me-1"></i>{% trans "AI Recommendations" %}
-                </a>
-                <a href="{% url 'matching:preferences' %}" class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-gear me-1"></i>{% trans "Matching Preferences" %}
-                </a>
-                {% endif %}
-            </div>
-        </div>
     </div>
 </div>
 {% endblock %}
