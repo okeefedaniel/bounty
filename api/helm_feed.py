@@ -143,7 +143,7 @@ def bounty_helm_feed(request):
                 'title': f'{new_high_matches} high-relevance match{"es" if new_high_matches != 1 else ""} awaiting review',
                 'severity': 'info',
                 'since': '',
-                'deep_link': f'{base_url}/matching/',
+                'deep_link': f'{base_url}/matching/recommendations/',
             })
     except Exception:
         pass

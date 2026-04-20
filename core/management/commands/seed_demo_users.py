@@ -13,6 +13,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
+from core.models import BountyProfile
 from keel.accounts.models import ProductAccess
 
 User = get_user_model()
@@ -55,6 +56,11 @@ class Command(BaseCommand):
             ProductAccess.objects.update_or_create(
                 user=user, product=product,
                 defaults={'role': role, 'is_active': True},
+            )
+
+            BountyProfile.objects.get_or_create(
+                user=user,
+                defaults={'organization_name': 'Demo Agency'},
             )
 
             action = 'Created' if created else 'Updated'

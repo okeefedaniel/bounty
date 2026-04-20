@@ -31,7 +31,10 @@ jobs:
     env:
       DATABASE_URL: postgresql://bounty:bounty@localhost:5432/bounty_test
       DJANGO_SECRET_KEY: test-secret-key-not-for-production
-      DJANGO_DEBUG: 'True'
+      # CI must exercise the prod-like path so `check --deploy` catches
+      # regressions. Test runs that legitimately need DEBUG can flip it
+      # on per-step.
+      DJANGO_DEBUG: 'False'
 
     steps:
       - uses: actions/checkout@v4
@@ -61,7 +64,10 @@ jobs:
         run: python manage.py migrate --noinput
 
       - name: Django deployment check
-        run: python manage.py check --deploy 2>&1 || true
+        # Fails the build on any deployment-check warning (DEBUG=True,
+        # ALLOWED_HOSTS=['*'], insecure cookies, etc). Dropped the
+        # prior `|| true` that was silently swallowing regressions.
+        run: python manage.py check --deploy 2>&1
 
       - name: Run tests with coverage
         run: |
