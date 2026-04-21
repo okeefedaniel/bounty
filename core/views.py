@@ -80,4 +80,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         context['has_ai_access'] = _safe(_ai_access, False, 'has_ai_access')
 
+        from django.urls import reverse
+        tracked_url = reverse('opportunities:tracked-list')
+        browse_url = reverse('portal:opportunities')
+        context['tracked_url'] = tracked_url if context['tracked_count'] else browse_url
+        context['deadlines_url'] = tracked_url if context['approaching_deadlines'] else browse_url
+
         return context

@@ -37,7 +37,7 @@
 {# -- Stat Cards -- #}
 <div class="row g-3 mb-4">
     <div class="col-md-3">
-        <a href="{% url 'opportunities:tracked-list' %}" class="text-decoration-none">
+        <a href="{{ tracked_url }}" class="text-decoration-none">
             <div class="card stat-card accent-blue h-100 stat-card-link">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
@@ -67,17 +67,19 @@
         </a>
     </div>
     <div class="col-md-3">
-        <div class="card stat-card accent-gold h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-value">{{ approaching_deadlines|length|default:"0" }}</div>
-                        <div class="stat-label">{% trans "Approaching Deadlines" %}</div>
+        <a href="{{ deadlines_url }}" class="text-decoration-none">
+            <div class="card stat-card accent-gold h-100 stat-card-link">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="stat-value">{{ approaching_deadlines|length|default:"0" }}</div>
+                            <div class="stat-label">{% trans "Approaching Deadlines" %}</div>
+                        </div>
+                        <i class="bi bi-clock fs-3 text-muted opacity-50"></i>
                     </div>
-                    <i class="bi bi-clock fs-3 text-muted opacity-50"></i>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-3">
         {% if has_ai_access %}
