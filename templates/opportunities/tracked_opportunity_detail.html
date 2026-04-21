@@ -36,10 +36,35 @@
             {% endif %}
         </div>
     </div>
-    <a href="{% url 'opportunities:tracked-list' %}" class="btn btn-outline-secondary">
-        <i class="bi bi-arrow-left me-1"></i>{% trans "Back to List" %}
-    </a>
+    <div class="d-flex align-items-center gap-2">
+        {% if not tracked.is_claimed %}
+            <form method="post" action="{% url 'opportunities:tracked-claim' tracked.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-hand-index-thumb me-1"></i>{% trans "Claim" %}
+                </button>
+            </form>
+        {% elif tracked.tracked_by == request.user %}
+            <form method="post" action="{% url 'opportunities:tracked-release' tracked.pk %}" class="d-inline"
+                  onsubmit="return confirm('{% trans "Release this opportunity back to the shared pool?" %}');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-warning" title="{% trans 'Release back to pool' %}">
+                    <i class="bi bi-hand-thumbs-up me-1"></i>{% trans "Release" %}
+                </button>
+            </form>
+        {% endif %}
+        <a href="{% url 'opportunities:tracked-list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>{% trans "Back to List" %}
+        </a>
+    </div>
 </div>
+
+{% if not tracked.is_claimed %}
+<div class="alert alert-warning d-flex align-items-center" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <div>{% trans "This opportunity is in the unclaimed pool. Claim it to become the principal driver." %}</div>
+</div>
+{% endif %}
 
 <div class="row g-4">
     {# -- Left Column (8 cols) -- #}
@@ -104,6 +129,98 @@
                     {% csrf_token %}
                     {% crispy form %}
                 </form>
+            </div>
+        </div>
+
+        {# Attachments / Diligence Documents #}
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="bi bi-paperclip me-2"></i>{% trans "Attachments" %}
+                    <span class="badge bg-secondary rounded-pill ms-1">{{ attachments|length }}</span>
+                </span>
+            </div>
+            <div class="card-body">
+                {% if tracked.tracked_by == request.user %}
+                <form method="post" enctype="multipart/form-data"
+                      action="{% url 'opportunities:tracked-attachment-upload' tracked.pk %}"
+                      class="row g-2 align-items-end mb-3">
+                    {% csrf_token %}
+                    <div class="col-md-5">
+                        <label class="form-label small fw-bold mb-1">{% trans "File" %}</label>
+                        {{ attachment_form.file }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold mb-1">{% trans "Description" %}</label>
+                        {{ attachment_form.description }}
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold mb-1">{% trans "Visibility" %}</label>
+                        {{ attachment_form.visibility }}
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-primary btn-sm w-100" title="{% trans 'Upload' %}">
+                            <i class="bi bi-upload"></i>
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+
+                {% if attachments %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>{% trans "File" %}</th>
+                                <th>{% trans "Description" %}</th>
+                                <th>{% trans "Visibility" %}</th>
+                                <th>{% trans "Uploaded" %}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for att in attachments %}
+                            <tr>
+                                <td>
+                                    <a href="{{ att.file.url }}" target="_blank" rel="noopener">
+                                        <i class="bi bi-file-earmark me-1"></i>{{ att.filename }}
+                                    </a>
+                                    {% if att.source == 'manifest_signed' %}
+                                        <span class="badge bg-success ms-1" title="{% trans 'Signed via Manifest' %}">
+                                            <i class="bi bi-patch-check"></i> {% trans "Signed" %}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="small">{{ att.description|default:"—" }}</td>
+                                <td>
+                                    {% if att.visibility == 'internal' %}
+                                        <span class="badge bg-light text-dark">{% trans "Internal" %}</span>
+                                    {% else %}
+                                        <span class="badge bg-info text-dark">{% trans "External" %}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-muted small">{{ att.uploaded_at|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if tracked.tracked_by == request.user and att.source != 'manifest_signed' %}
+                                    <form method="post"
+                                          action="{% url 'opportunities:tracked-attachment-delete' tracked.pk att.pk %}"
+                                          class="d-inline"
+                                          onsubmit="return confirm('{% trans "Remove this attachment?" %}');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="{% trans 'Delete' %}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted small mb-0">{% trans "No attachments yet. Upload diligence documents above." %}</p>
+                {% endif %}
             </div>
         </div>
 
@@ -218,6 +335,14 @@
                         </span>
                     </li>
                     <hr>
+                    <li class="mb-3">
+                        <small class="text-muted d-block text-uppercase" style="letter-spacing: 0.5px;">{% trans "Principal Driver" %}</small>
+                        {% if tracked.tracked_by %}
+                        <span>{{ tracked.tracked_by.get_full_name|default:tracked.tracked_by.username }}</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">{% trans "Unclaimed" %}</span>
+                        {% endif %}
+                    </li>
                     <li class="mb-3">
                         <small class="text-muted d-block text-uppercase" style="letter-spacing: 0.5px;">{% trans "Tracking Since" %}</small>
                         <span>{{ tracked.created_at|date:"M d, Y" }}</span>

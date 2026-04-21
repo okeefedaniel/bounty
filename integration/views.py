@@ -51,6 +51,16 @@ class PushToHarborView(CoordinatorRequiredMixin, View):
             messages.info(request, 'This opportunity has already been pushed to Harbor.')
             return redirect('opportunities:tracked-detail', pk=tracked.pk)
 
+        # Harbor export happens AFTER the grant is won — never before. The
+        # template also hides the button pre-award, but enforce here as the
+        # authoritative check (defense in depth).
+        if tracked.status != TrackedOpportunity.TrackingStatus.AWARDED:
+            messages.error(
+                request,
+                'Harbor export is only available after the opportunity is awarded.',
+            )
+            return redirect('opportunities:tracked-detail', pk=tracked.pk)
+
         # Use global token from settings, or per-user connection
         connection = getattr(request.user, 'harbor_connection', None)
         base_url = getattr(connection, 'harbor_base_url', None) if connection else None

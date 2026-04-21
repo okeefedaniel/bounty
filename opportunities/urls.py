@@ -17,4 +17,10 @@ urlpatterns = [
         views.RemoveCollaboratorView.as_view(),
         name='tracked-remove-collaborator',
     ),
+    path('<uuid:pk>/attachments/', views.UploadAttachmentView.as_view(), name='tracked-attachment-upload'),
+    path(
+        '<uuid:pk>/attachments/<uuid:attachment_pk>/delete/',
+        views.DeleteAttachmentView.as_view(),
+        name='tracked-attachment-delete',
+    ),
 ]

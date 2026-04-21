@@ -3,7 +3,7 @@ from crispy_forms.layout import Column, Div, Fieldset, Layout, Row, Submit
 from django import forms
 from django.utils.translation import gettext_lazy as _lazy
 
-from .models import OpportunityCollaborator, TrackedOpportunity
+from .models import OpportunityAttachment, OpportunityCollaborator, TrackedOpportunity
 
 
 class TrackedOpportunityForm(forms.ModelForm):
@@ -91,3 +91,19 @@ class CollaboratorForm(forms.Form):
             self.add_error('email', _lazy('Email is required for external collaborators.'))
 
         return cleaned_data
+
+
+class AttachmentForm(forms.ModelForm):
+    """Upload a diligence document to a tracked opportunity."""
+
+    class Meta:
+        model = OpportunityAttachment
+        fields = ['file', 'description', 'visibility']
+        widgets = {
+            'description': forms.TextInput(attrs={
+                'class': 'form-control form-control-sm',
+                'placeholder': _lazy('Optional — what is this file?'),
+            }),
+            'file': forms.ClearableFileInput(attrs={'class': 'form-control form-control-sm'}),
+            'visibility': forms.Select(attrs={'class': 'form-select form-select-sm'}),
+        }

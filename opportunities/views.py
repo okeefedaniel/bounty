@@ -14,8 +14,13 @@ User = get_user_model()
 from keel.search.views import chat_stream_view, instant_search_view
 
 from .chat import GrantChat
-from .forms import CollaboratorForm, TrackedOpportunityForm
-from .models import FederalOpportunity, OpportunityCollaborator, TrackedOpportunity
+from .forms import AttachmentForm, CollaboratorForm, TrackedOpportunityForm
+from .models import (
+    FederalOpportunity,
+    OpportunityAttachment,
+    OpportunityCollaborator,
+    TrackedOpportunity,
+)
 from .search import GrantSearchEngine
 
 
@@ -188,9 +193,13 @@ class TrackedOpportunityListView(LoginRequiredMixin, SortableListMixin, ListView
     default_dir = 'asc'
 
     def get_queryset(self):
-        qs = TrackedOpportunity.objects.select_related(
-            'federal_opportunity',
-        ).filter(tracked_by=self.request.user)
+        qs = TrackedOpportunity.objects.select_related('federal_opportunity')
+
+        view = self.request.GET.get('view', 'mine')
+        if view == 'pool':
+            qs = qs.filter(tracked_by__isnull=True)
+        else:
+            qs = qs.filter(tracked_by=self.request.user)
 
         status = self.request.GET.get('status')
         if status:
@@ -210,6 +219,10 @@ class TrackedOpportunityListView(LoginRequiredMixin, SortableListMixin, ListView
         ]
         context['current_status'] = self.request.GET.get('status', '')
         context['current_priority'] = self.request.GET.get('priority', '')
+        context['current_view'] = self.request.GET.get('view', 'mine')
+        context['pool_count'] = TrackedOpportunity.objects.filter(
+            tracked_by__isnull=True,
+        ).count()
         return context
 
 
@@ -279,17 +292,25 @@ class TrackedOpportunityDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'tracked'
 
     def get_queryset(self):
+        # Visible to the principal driver AND anyone else when the opportunity
+        # is in the unowned pool (so a user can land on it from pool view and
+        # claim it).
+        from django.db.models import Q
         return TrackedOpportunity.objects.select_related(
             'federal_opportunity', 'tracked_by',
-        ).filter(tracked_by=self.request.user)
+        ).filter(Q(tracked_by=self.request.user) | Q(tracked_by__isnull=True))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = TrackedOpportunityForm(instance=self.object)
         context['collaborator_form'] = CollaboratorForm()
+        context['attachment_form'] = AttachmentForm()
         context['collaborators'] = self.object.collaborators.select_related(
             'user', 'invited_by',
         ).filter(is_active=True)
+        context['attachments'] = self.object.attachments.select_related(
+            'uploaded_by',
+        ).all()
         return context
 
 
@@ -381,6 +402,51 @@ class AddCollaboratorView(LoginRequiredMixin, FormView):
         context = super().get_context_data(**kwargs)
         context['tracked'] = self.tracked
         return context
+
+
+class UploadAttachmentView(LoginRequiredMixin, View):
+    """POST-only view to upload a diligence document to a tracked opportunity."""
+
+    http_method_names = ['post']
+
+    def post(self, request, pk):
+        tracked = get_object_or_404(
+            TrackedOpportunity, pk=pk, tracked_by=request.user,
+        )
+        form = AttachmentForm(request.POST, request.FILES)
+        if form.is_valid():
+            attachment = form.save(commit=False)
+            attachment.tracked_opportunity = tracked
+            attachment.uploaded_by = request.user
+            attachment.save()
+            messages.success(request, _('Attachment uploaded.'))
+        else:
+            for errors in form.errors.values():
+                for error in errors:
+                    messages.error(request, error)
+        return redirect('opportunities:tracked-detail', pk=pk)
+
+
+class DeleteAttachmentView(LoginRequiredMixin, View):
+    """POST-only view to delete a diligence document."""
+
+    http_method_names = ['post']
+
+    def post(self, request, pk, attachment_pk):
+        tracked = get_object_or_404(
+            TrackedOpportunity, pk=pk, tracked_by=request.user,
+        )
+        attachment = get_object_or_404(
+            OpportunityAttachment, pk=attachment_pk, tracked_opportunity=tracked,
+        )
+        # Guard: signed docs from Manifest are evidence — do not allow deletion.
+        if attachment.source == OpportunityAttachment.Source.MANIFEST_SIGNED:
+            messages.error(request, _('Signed documents cannot be deleted.'))
+            return redirect('opportunities:tracked-detail', pk=pk)
+        attachment.file.delete(save=False)
+        attachment.delete()
+        messages.success(request, _('Attachment removed.'))
+        return redirect('opportunities:tracked-detail', pk=pk)
 
 
 class RemoveCollaboratorView(LoginRequiredMixin, View):
