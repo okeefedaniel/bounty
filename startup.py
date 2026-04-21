@@ -19,8 +19,9 @@ def run(cmd, fatal=False):
     """Run a command, streaming output. Returns True on success."""
     log(f"Running: {cmd}")
     try:
+        # nosec B602 — startup commands are hardcoded, no untrusted input reaches them
         result = subprocess.run(
-            cmd, shell=True,
+            cmd, shell=True,  # nosec B602
             stdout=sys.stdout, stderr=sys.stderr,
         )
         if result.returncode != 0:
@@ -90,8 +91,8 @@ def main():
         f"--timeout 120"
     )
     log(f"=== Starting gunicorn on port {port} ===")
-    gunicorn_proc = subprocess.Popen(
-        gunicorn_cmd, shell=True,
+    gunicorn_proc = subprocess.Popen(  # nosec B602
+        gunicorn_cmd, shell=True,  # nosec B602
         stdout=sys.stdout, stderr=sys.stderr,
     )
     log(f"Gunicorn started (PID {gunicorn_proc.pid})")
