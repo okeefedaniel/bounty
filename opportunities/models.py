@@ -7,7 +7,12 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from keel.core.models import AbstractStatusHistory
+from keel.core.models import (
+    AbstractAssignment,
+    AbstractAttachment,
+    AbstractCollaborator,
+    AbstractStatusHistory,
+)
 
 
 class FederalOpportunity(models.Model):
@@ -140,8 +145,10 @@ class TrackedOpportunity(models.Model):
         related_name='tracked_records',
     )
     tracked_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True,
         related_name='tracked_opportunities',
+        help_text=_('Current principal driver. Null when unclaimed.'),
     )
     status = models.CharField(
         max_length=15, choices=TrackingStatus.choices,
@@ -181,6 +188,66 @@ class TrackedOpportunity(models.Model):
     def __str__(self):
         return f"[{self.get_status_display()}] {self.federal_opportunity.title[:60]}"
 
+    @property
+    def is_claimed(self):
+        return self.tracked_by_id is not None
+
+    def claim(self, user, by_manager=None):
+        """Assign a principal driver and open an Assignment record.
+
+        ``by_manager`` is set when a manager assigns on someone else's behalf;
+        self-claims leave it None and record ``assignment_type=CLAIMED``.
+        Closes any open assignment row before opening the new one.
+        """
+        from django.utils import timezone
+
+        for open_row in self.assignments.filter(
+            status__in=[
+                OpportunityAssignment.Status.ASSIGNED,
+                OpportunityAssignment.Status.IN_PROGRESS,
+            ],
+        ):
+            open_row.status = (
+                OpportunityAssignment.Status.REASSIGNED
+                if user != open_row.assigned_to
+                else OpportunityAssignment.Status.COMPLETED
+            )
+            open_row.released_at = timezone.now()
+            open_row.save(update_fields=['status', 'released_at'])
+
+        assignment = OpportunityAssignment.objects.create(
+            tracked_opportunity=self,
+            assigned_to=user,
+            assigned_by=by_manager,
+            assignment_type=(
+                OpportunityAssignment.AssignmentType.MANAGER_ASSIGNED
+                if by_manager else OpportunityAssignment.AssignmentType.CLAIMED
+            ),
+            status=OpportunityAssignment.Status.IN_PROGRESS,
+        )
+        self.tracked_by = user
+        self.save(update_fields=['tracked_by', 'updated_at'])
+        return assignment
+
+    def release(self, released_by):
+        """Return this opportunity to the unowned pool.
+
+        Closes the active assignment row and nulls ``tracked_by``.
+        """
+        from django.utils import timezone
+
+        self.assignments.filter(
+            status__in=[
+                OpportunityAssignment.Status.ASSIGNED,
+                OpportunityAssignment.Status.IN_PROGRESS,
+            ],
+        ).update(
+            status=OpportunityAssignment.Status.RELEASED,
+            released_at=timezone.now(),
+        )
+        self.tracked_by = None
+        self.save(update_fields=['tracked_by', 'updated_at'])
+
 
 class TrackedOpportunityStatusHistory(AbstractStatusHistory):
     """Immutable audit trail of tracked opportunity status transitions."""
@@ -197,49 +264,61 @@ class TrackedOpportunityStatusHistory(AbstractStatusHistory):
         return f"{self.tracked_opportunity}: {self.old_status} -> {self.new_status}"
 
 
-class OpportunityCollaborator(models.Model):
-    """A collaborator invited to work on a tracked federal opportunity."""
+class OpportunityCollaborator(AbstractCollaborator):
+    """A collaborator invited to work on a tracked federal opportunity.
 
-    class CollaboratorRole(models.TextChoices):
-        LEAD = 'lead', _('Lead')
-        CONTRIBUTOR = 'contributor', _('Contributor')
-        REVIEWER = 'reviewer', _('Reviewer')
-        OBSERVER = 'observer', _('Observer')
+    Extends keel.core.models.AbstractCollaborator (canonical LEAD /
+    CONTRIBUTOR / REVIEWER / OBSERVER role vocab, invite lifecycle,
+    internal-user or external-email support).
+    """
 
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tracked_opportunity = models.ForeignKey(
         TrackedOpportunity, on_delete=models.CASCADE,
         related_name='collaborators',
     )
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-        null=True, blank=True, related_name='collaborations',
-    )
-    email = models.EmailField(blank=True, default='')
-    name = models.CharField(max_length=255, blank=True, default='')
-    role = models.CharField(
-        max_length=15, choices=CollaboratorRole.choices,
-        default=CollaboratorRole.CONTRIBUTOR,
-    )
-    invited_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
-        null=True, related_name='invitations_sent',
-    )
-    invited_at = models.DateTimeField(auto_now_add=True)
-    accepted_at = models.DateTimeField(null=True, blank=True)
-    is_active = models.BooleanField(default=True)
 
-    class Meta:
-        ordering = ['role', '-invited_at']
+    class Meta(AbstractCollaborator.Meta):
         verbose_name = _('Opportunity Collaborator')
         verbose_name_plural = _('Opportunity Collaborators')
-
-    def __str__(self):
-        display = str(self.user) if self.user else self.email or self.name
-        return f"{display} ({self.get_role_display()})"
 
     @property
     def display_name(self):
         if self.user:
             return self.user.get_full_name() or self.user.username
         return self.name or self.email
+
+
+class OpportunityAssignment(AbstractAssignment):
+    """Records the explicit claim of a tracked opportunity by a principal driver.
+
+    Created on TrackedOpportunity creation (self-claim) and on explicit
+    re-assignment / release. Keeps a history of who drove the opportunity
+    and when; the TrackedOpportunity.tracked_by field is always the
+    currently-active driver.
+    """
+
+    tracked_opportunity = models.ForeignKey(
+        TrackedOpportunity, on_delete=models.CASCADE,
+        related_name='assignments',
+    )
+
+    class Meta(AbstractAssignment.Meta):
+        verbose_name = _('Opportunity Assignment')
+        verbose_name_plural = _('Opportunity Assignments')
+
+
+class OpportunityAttachment(AbstractAttachment):
+    """Documents attached to a tracked opportunity during diligence.
+
+    Extends keel.core.models.AbstractAttachment. Also the destination for
+    signed PDFs returning from the Manifest roundtrip (source=MANIFEST_SIGNED).
+    """
+
+    tracked_opportunity = models.ForeignKey(
+        TrackedOpportunity, on_delete=models.CASCADE,
+        related_name='attachments',
+    )
+
+    class Meta(AbstractAttachment.Meta):
+        verbose_name = _('Opportunity Attachment')
+        verbose_name_plural = _('Opportunity Attachments')

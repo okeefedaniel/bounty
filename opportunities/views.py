@@ -228,12 +228,47 @@ class TrackOpportunityView(LoginRequiredMixin, View):
         )
 
         if created:
+            # Record the explicit self-claim in the assignment history.
+            tracked.claim(request.user)
             messages.success(request, _('Now tracking "%(title)s".') % {'title': opp.title[:60]})
         else:
             messages.info(request, _('You are already tracking this opportunity.'))
 
         next_url = request.POST.get('next', '')
         return redirect(next_url or reverse('dashboard'))
+
+
+class ClaimOpportunityView(LoginRequiredMixin, View):
+    """Claim an unclaimed tracked opportunity from the shared pool."""
+
+    http_method_names = ['post']
+
+    def post(self, request, pk):
+        tracked = get_object_or_404(TrackedOpportunity, pk=pk)
+        if tracked.is_claimed and tracked.tracked_by != request.user:
+            messages.error(
+                request,
+                _('This opportunity is already claimed by %(who)s.') % {
+                    'who': tracked.tracked_by.get_full_name() or tracked.tracked_by.username,
+                },
+            )
+            return redirect(reverse('opportunities:tracked-detail', kwargs={'pk': pk}))
+
+        tracked.claim(request.user)
+        messages.success(request, _('You are now the principal driver for this opportunity.'))
+        return redirect(reverse('opportunities:tracked-detail', kwargs={'pk': pk}))
+
+
+class ReleaseOpportunityView(LoginRequiredMixin, View):
+    """Release a tracked opportunity back to the shared pool."""
+
+    http_method_names = ['post']
+
+    def post(self, request, pk):
+        tracked = get_object_or_404(TrackedOpportunity, pk=pk, tracked_by=request.user)
+        tracked.release(request.user)
+        messages.success(request, _('Opportunity released back to the pool.'))
+        return redirect(reverse('opportunities:tracked-list'))
 
 
 class TrackedOpportunityDetailView(LoginRequiredMixin, DetailView):

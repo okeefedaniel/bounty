@@ -8,6 +8,8 @@ urlpatterns = [
     path('', views.TrackedOpportunityListView.as_view(), name='tracked-list'),
     path('add/', views.TrackOpportunityView.as_view(), name='tracked-add'),
     path('<uuid:pk>/', views.TrackedOpportunityDetailView.as_view(), name='tracked-detail'),
+    path('<uuid:pk>/claim/', views.ClaimOpportunityView.as_view(), name='tracked-claim'),
+    path('<uuid:pk>/release/', views.ReleaseOpportunityView.as_view(), name='tracked-release'),
     path('<uuid:pk>/edit/', views.TrackedOpportunityUpdateView.as_view(), name='tracked-update'),
     path('<uuid:pk>/collaborate/', views.AddCollaboratorView.as_view(), name='tracked-collaborate'),
     path(
