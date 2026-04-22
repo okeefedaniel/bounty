@@ -140,14 +140,14 @@
                                         {{ item.federal_opportunity.title|truncatewords:8 }}
                                     </a>
                                 </td>
-                                <td><span class="badge badge-{{ item.status }}">{{ item.get_status_display }}</span></td>
+                                <td><span class="pill pill-{{ item.status }}">{{ item.get_status_display }}</span></td>
                                 <td>
                                     {% if item.priority == 'high' %}
-                                    <span class="badge bg-danger">{% trans "High" %}</span>
+                                    <span class="pill pill-error">{% trans"High" %}</span>
                                     {% elif item.priority == 'medium' %}
-                                    <span class="badge bg-warning text-dark">{% trans "Medium" %}</span>
+                                    <span class="pill pill-brass">{% trans"Medium" %}</span>
                                     {% else %}
-                                    <span class="badge bg-secondary">{% trans "Low" %}</span>
+                                    <span class="pill pill-muted">{% trans"Low" %}</span>
                                     {% endif %}
                                 </td>
                                 <td class="small text-muted">
@@ -212,7 +212,7 @@
                 <a href="{% url 'portal:opportunity-detail' match.federal_opportunity.pk %}" class="list-group-item list-group-item-action">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="fw-semibold small">{{ match.federal_opportunity.title|truncatewords:6 }}</div>
-                        <span class="badge {% if match.relevance_score >= 85 %}bg-success{% elif match.relevance_score >= 70 %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                        <span class="pill {% if match.relevance_score >= 85 %}pill-success{% elif match.relevance_score >= 70 %}pill-brass{% else %}pill-muted{% endif %}">
                             {{ match.relevance_score }}%
                         </span>
                     </div>

@@ -44,7 +44,7 @@
            href="{% url 'opportunities:tracked-list' %}?view=pool">
             <i class="bi bi-people me-1"></i>{% trans "Unclaimed" %}
             {% if pool_count %}
-                <span class="badge bg-secondary ms-1">{{ pool_count }}</span>
+                <span class="pill pill-muted ms-1">{{ pool_count }}</span>
             {% endif %}
         </a>
     </li>
@@ -113,20 +113,20 @@
                             {% endif %}
                         </td>
                         <td>
-                            <span class="badge bg-light text-dark">{{ item.federal_opportunity.agency_name|truncatewords:4 }}</span>
+                            <span class="pill pill-muted">{{ item.federal_opportunity.agency_name|truncatewords:4 }}</span>
                         </td>
                         <td>
-                            <span class="badge badge-{{ item.status }}">
+                            <span class="pill pill-{{ item.status }}">
                                 {{ item.get_status_display }}
                             </span>
                         </td>
                         <td>
                             {% if item.priority == 'high' %}
-                            <span class="badge bg-danger">{% trans "High" %}</span>
+                            <span class="pill pill-error">{% trans"High" %}</span>
                             {% elif item.priority == 'medium' %}
-                            <span class="badge bg-warning text-dark">{% trans "Medium" %}</span>
+                            <span class="pill pill-brass">{% trans"Medium" %}</span>
                             {% else %}
-                            <span class="badge bg-secondary">{% trans "Low" %}</span>
+                            <span class="pill pill-muted">{% trans"Low" %}</span>
                             {% endif %}
                         </td>
                         <td>
@@ -149,9 +149,9 @@
                         </td>
                         <td>
                             {% if item.harbor_push_status == 'pushed' %}
-                            <span class="badge bg-success"><i class="bi bi-check me-1"></i>{% trans "Pushed" %}</span>
+                            <span class="pill pill-success"><i class="bi bi-check me-1"></i>{% trans"Pushed" %}</span>
                             {% elif item.harbor_push_status == 'failed' %}
-                            <span class="badge bg-danger">{% trans "Failed" %}</span>
+                            <span class="pill pill-error">{% trans"Failed" %}</span>
                             {% else %}
                             <span class="text-muted small">-</span>
                             {% endif %}
