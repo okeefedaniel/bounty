@@ -125,7 +125,8 @@ def main():
     log("=== Running migrations ===")
     # Fix InconsistentMigrationHistory if needed (one-time, idempotent)
     run(f"{manage_cmd} fix_migration_history")
-    run(f"{manage_cmd} migrate --noinput")
+    # MUST be fatal — see keel/CLAUDE.md "Startup failures MUST be fatal."
+    run(f"{manage_cmd} migrate --noinput", fatal=True)
 
     # Ensure django.contrib.sites has the correct Site record (required by allauth)
     log("=== Configuring Site object ===")
