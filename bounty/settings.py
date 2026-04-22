@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'keel.notifications',
     'keel.requests',
     'keel.search',
+    'keel.signatures',
     # Third party
     'rest_framework',
     'crispy_forms',
@@ -149,6 +150,15 @@ GRANT_MATCH_HIGH_SCORE = 90
 # Harbor integration
 HARBOR_API_BASE_URL = os.environ.get('HARBOR_API_BASE_URL', 'https://harbor.docklabs.ai')
 HARBOR_API_TOKEN = os.environ.get('HARBOR_API_TOKEN', '')
+
+# Manifest signing handoff — all three are optional. When MANIFEST_URL or
+# MANIFEST_API_TOKEN is unset, the Project Lifecycle standalone fallback
+# (local_sign) is offered instead of "Send for Signing." When
+# MANIFEST_WEBHOOK_SECRET is unset, the inbound completion webhook rejects
+# all requests.
+MANIFEST_URL = os.environ.get('MANIFEST_URL', '')
+MANIFEST_API_TOKEN = os.environ.get('MANIFEST_API_TOKEN', '')
+MANIFEST_WEBHOOK_SECRET = os.environ.get('MANIFEST_WEBHOOK_SECRET', '')
 
 # Static files
 STATIC_URL = '/static/'

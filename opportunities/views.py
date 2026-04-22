@@ -13,8 +13,17 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 from keel.search.views import chat_stream_view, instant_search_view
 
+from keel.signatures.client import is_available as manifest_is_available
+from keel.signatures.client import local_sign, send_to_manifest
+from keel.signatures.models import ManifestHandoff
+
 from .chat import GrantChat
-from .forms import AttachmentForm, CollaboratorForm, TrackedOpportunityForm
+from .forms import (
+    AttachmentForm,
+    CollaboratorForm,
+    LocalSignForm,
+    TrackedOpportunityForm,
+)
 from .models import (
     FederalOpportunity,
     OpportunityAttachment,
@@ -284,6 +293,111 @@ class ReleaseOpportunityView(LoginRequiredMixin, View):
         return redirect(reverse('opportunities:tracked-list'))
 
 
+class SendForSigningView(LoginRequiredMixin, View):
+    """Kick off the Manifest signing handoff for internal approval.
+
+    Available only when status==PREPARING and Manifest is configured.
+    When Manifest is unavailable, the UI falls back to LocalSignView.
+    """
+
+    http_method_names = ['post']
+
+    def post(self, request, pk):
+        tracked = get_object_or_404(
+            TrackedOpportunity, pk=pk, tracked_by=request.user,
+        )
+        if tracked.status != TrackedOpportunity.TrackingStatus.PREPARING:
+            messages.error(
+                request,
+                _('Signing handoff is only available while preparing the application.'),
+            )
+            return redirect('opportunities:tracked-detail', pk=pk)
+
+        if not manifest_is_available():
+            messages.error(
+                request,
+                _('Manifest is not configured. Use "Upload signed approval" instead.'),
+            )
+            return redirect('opportunities:tracked-detail', pk=pk)
+
+        display_name = request.user.get_full_name() or request.user.username
+        handoff = send_to_manifest(
+            source_obj=tracked,
+            packet_label=(
+                f'Internal Approval — {tracked.federal_opportunity.title[:80]}'
+            ),
+            signers=[{'email': request.user.email, 'name': display_name}],
+            attachment_model='opportunities.OpportunityAttachment',
+            attachment_fk_name='tracked_opportunity',
+            on_approved_status=TrackedOpportunity.TrackingStatus.APPROVED,
+            created_by=request.user,
+            callback_url=request.build_absolute_uri(
+                reverse('keel_signatures:webhook'),
+            ),
+        )
+
+        if handoff.status == ManifestHandoff.Status.SENT:
+            messages.success(
+                request,
+                _('Sent to Manifest for signing. You will be notified on completion.'),
+            )
+        else:
+            messages.error(
+                request,
+                _('Could not reach Manifest: %(err)s. The attempt is logged.') % {
+                    'err': handoff.error_message or handoff.get_status_display(),
+                },
+            )
+        return redirect('opportunities:tracked-detail', pk=pk)
+
+
+class LocalSignView(LoginRequiredMixin, FormView):
+    """Standalone-mode fallback — upload a locally-signed PDF.
+
+    Records a ManifestHandoff with status=LOCAL_SIGNED and fires the
+    same packet_approved signal the real Manifest roundtrip does, so the
+    signed PDF is filed and the status transitions identically.
+    """
+
+    form_class = LocalSignForm
+    template_name = 'opportunities/local_sign.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.tracked = get_object_or_404(
+            TrackedOpportunity, pk=self.kwargs['pk'], tracked_by=request.user,
+        )
+        if self.tracked.status != TrackedOpportunity.TrackingStatus.PREPARING:
+            messages.error(
+                request,
+                _('Local sign is only available while preparing the application.'),
+            )
+            return redirect('opportunities:tracked-detail', pk=self.tracked.pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        local_sign(
+            source_obj=self.tracked,
+            signed_pdf=form.cleaned_data['signed_pdf'],
+            attachment_model='opportunities.OpportunityAttachment',
+            attachment_fk_name='tracked_opportunity',
+            on_approved_status=TrackedOpportunity.TrackingStatus.APPROVED,
+            packet_label=(
+                f'Internal Approval (local) — {self.tracked.federal_opportunity.title[:80]}'
+            ),
+            created_by=self.request.user,
+        )
+        messages.success(
+            self.request,
+            _('Signed approval recorded. Status moved to Internally Approved.'),
+        )
+        return redirect('opportunities:tracked-detail', pk=self.tracked.pk)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['tracked'] = self.tracked
+        return ctx
+
+
 class TrackedOpportunityDetailView(LoginRequiredMixin, DetailView):
     """Detail view for a tracked opportunity with edit form and collaborators."""
 
@@ -311,6 +425,12 @@ class TrackedOpportunityDetailView(LoginRequiredMixin, DetailView):
         context['attachments'] = self.object.attachments.select_related(
             'uploaded_by',
         ).all()
+        context['manifest_available'] = manifest_is_available()
+        context['latest_handoff'] = ManifestHandoff.objects.filter(
+            source_app_label='opportunities',
+            source_model='trackedopportunity',
+            source_pk=str(self.object.pk),
+        ).first()
         return context
 
 

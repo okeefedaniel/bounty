@@ -10,6 +10,8 @@ urlpatterns = [
     path('<uuid:pk>/', views.TrackedOpportunityDetailView.as_view(), name='tracked-detail'),
     path('<uuid:pk>/claim/', views.ClaimOpportunityView.as_view(), name='tracked-claim'),
     path('<uuid:pk>/release/', views.ReleaseOpportunityView.as_view(), name='tracked-release'),
+    path('<uuid:pk>/sign/send/', views.SendForSigningView.as_view(), name='tracked-sign-send'),
+    path('<uuid:pk>/sign/local/', views.LocalSignView.as_view(), name='tracked-sign-local'),
     path('<uuid:pk>/edit/', views.TrackedOpportunityUpdateView.as_view(), name='tracked-update'),
     path('<uuid:pk>/collaborate/', views.AddCollaboratorView.as_view(), name='tracked-collaborate'),
     path(

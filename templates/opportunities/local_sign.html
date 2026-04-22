@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Upload Signed Approval" %}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'opportunities:tracked-list' %}">{% trans "Tracked Opportunities" %}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'opportunities:tracked-detail' tracked.pk %}">{{ tracked.federal_opportunity.title|truncatewords:6 }}</a></li>
+                <li class="breadcrumb-item active">{% trans "Upload Signed Approval" %}</li>
+            </ol>
+        </nav>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-patch-check me-2"></i>{% trans "Upload Signed Approval" %}
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">
+                    {% blocktrans trimmed %}
+                    Manifest isn't configured for this deployment. If you've already
+                    collected signatures on the internal approval document, upload
+                    the signed PDF here. The opportunity will move to Internally
+                    Approved and the signed document will be filed on this record.
+                    {% endblocktrans %}
+                </p>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ form.signed_pdf.label_tag }}
+                        {{ form.signed_pdf }}
+                        {% if form.signed_pdf.help_text %}
+                        <div class="form-text">{{ form.signed_pdf.help_text }}</div>
+                        {% endif %}
+                        {% for err in form.signed_pdf.errors %}
+                        <div class="invalid-feedback d-block">{{ err }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload me-1"></i>{% trans "Record Approval" %}
+                        </button>
+                        <a href="{% url 'opportunities:tracked-detail' tracked.pk %}" class="btn btn-outline-secondary">
+                            {% trans "Cancel" %}
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -54,6 +54,9 @@ urlpatterns = [
     # Feedback / change requests (beta testers + admins)
     path('feedback/', include('keel.requests.urls')),
 
+    # Manifest signing handoff (inbound webhook)
+    path('keel/signatures/', include('keel.signatures.urls')),
+
     # AI matching
     path('matching/', include('matching.urls')),
 

@@ -135,6 +135,7 @@ class TrackedOpportunity(models.Model):
     class TrackingStatus(models.TextChoices):
         WATCHING = 'watching', _('Watching')
         PREPARING = 'preparing', _('Preparing Application')
+        APPROVED = 'approved', _('Internally Approved')
         APPLIED = 'applied', _('Applied')
         AWARDED = 'awarded', _('Awarded')
         DECLINED = 'declined', _('Declined')

@@ -365,6 +365,88 @@
             </div>
         </div>
 
+        {# Internal Approval (Manifest handoff) Card #}
+        {% if tracked.status == 'preparing' and tracked.tracked_by == request.user %}
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-patch-check me-2"></i>{% trans "Internal Approval" %}
+            </div>
+            <div class="card-body">
+                <p class="small text-muted mb-3">
+                    {% trans "Send this for internal sign-off before submitting the application. The signed approval will be filed on this record and the status will move to Internally Approved." %}
+                </p>
+                {% if manifest_available %}
+                <form method="post" action="{% url 'opportunities:tracked-sign-send' tracked.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-send me-1"></i>{% trans "Send to Manifest for Signing" %}
+                    </button>
+                </form>
+                <div class="text-center my-2 small text-muted">{% trans "or" %}</div>
+                <a href="{% url 'opportunities:tracked-sign-local' tracked.pk %}" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="bi bi-upload me-1"></i>{% trans "Upload signed approval" %}
+                </a>
+                {% else %}
+                <div class="small text-muted mb-2">
+                    <i class="bi bi-info-circle me-1"></i>{% trans "Manifest is not configured for this deployment." %}
+                </div>
+                <a href="{% url 'opportunities:tracked-sign-local' tracked.pk %}" class="btn btn-primary w-100">
+                    <i class="bi bi-upload me-1"></i>{% trans "Upload signed approval" %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# Handoff Status (when one exists) #}
+        {% if latest_handoff %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-hourglass-split me-2"></i>{% trans "Last Approval Handoff" %}
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled small mb-0">
+                    <li class="mb-2">
+                        <strong>{% trans "Status:" %}</strong>
+                        {% if latest_handoff.status == 'signed' %}
+                        <span class="badge bg-success">{% trans "Signed" %}</span>
+                        {% elif latest_handoff.status == 'local_signed' %}
+                        <span class="badge bg-success">{% trans "Signed (local)" %}</span>
+                        {% elif latest_handoff.status == 'sent' %}
+                        <span class="badge bg-info text-dark">{% trans "Sent — awaiting signatures" %}</span>
+                        {% elif latest_handoff.status == 'failed' %}
+                        <span class="badge bg-danger">{% trans "Failed" %}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ latest_handoff.get_status_display }}</span>
+                        {% endif %}
+                    </li>
+                    <li class="mb-2">
+                        <strong>{% trans "Sent:" %}</strong>
+                        <span class="text-muted">{{ latest_handoff.created_at|date:"M d, Y g:i A" }}</span>
+                    </li>
+                    {% if latest_handoff.signed_at %}
+                    <li class="mb-2">
+                        <strong>{% trans "Signed:" %}</strong>
+                        <span class="text-muted">{{ latest_handoff.signed_at|date:"M d, Y g:i A" }}</span>
+                    </li>
+                    {% endif %}
+                    {% if latest_handoff.manifest_url %}
+                    <li class="mb-0">
+                        <a href="{{ latest_handoff.manifest_url }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>{% trans "View in Manifest" %}
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if latest_handoff.error_message %}
+                    <li class="mb-0">
+                        <div class="alert alert-warning small mt-2 mb-0">{{ latest_handoff.error_message }}</div>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
         {# Push to Harbor Card #}
         {% if tracked.status == 'awarded' and tracked.harbor_push_status != 'pushed' %}
         <div class="card mb-4 border-success">
