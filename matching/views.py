@@ -84,6 +84,23 @@ class RecommendedMatchesView(LoginRequiredMixin, ListView):
         return context
 
 
+class RunMatchingView(LoginRequiredMixin, View):
+    """POST-only: manually kick off an AI recommendations search for the current user."""
+
+    http_method_names = ['post']
+
+    def post(self, request):
+        if not get_bounty_profile(request.user).has_ai_access:
+            messages.info(request, _('AI matching is not configured. Contact your administrator.'))
+            return redirect('matching:recommendations')
+        if not MatchPreference.objects.filter(user=request.user).exists():
+            messages.info(request, _('Set up your matching preferences first.'))
+            return redirect('matching:preferences')
+        run_matching_async(request.user)
+        messages.success(request, _('AI matching started. New recommendations will appear shortly.'))
+        return redirect('matching:recommendations')
+
+
 class DismissMatchView(LoginRequiredMixin, View):
     """POST-only view to dismiss a match recommendation."""
 
