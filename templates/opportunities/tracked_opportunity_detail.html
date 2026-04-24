@@ -25,11 +25,11 @@
         <div class="d-flex align-items-center gap-2 flex-wrap">
             <span class="pill pill-{{ tracked.status }}">{{ tracked.get_status_display }}</span>
             {% if tracked.priority == 'high' %}
-            <span class="pill pill-error">{% trans"High Priority" %}</span>
+            <span class="pill pill-error">{% trans "High Priority" %}</span>
             {% elif tracked.priority == 'medium' %}
-            <span class="pill pill-brass">{% trans"Medium Priority" %}</span>
+            <span class="pill pill-brass">{% trans "Medium Priority" %}</span>
             {% else %}
-            <span class="pill pill-muted">{% trans"Low Priority" %}</span>
+            <span class="pill pill-muted">{% trans "Low Priority" %}</span>
             {% endif %}
             {% if tracked.federal_opportunity.opportunity_number %}
             <span class="text-muted small">{{ tracked.federal_opportunity.opportunity_number }}</span>
@@ -194,9 +194,9 @@
                                 <td class="small">{{ att.description|default:"—" }}</td>
                                 <td>
                                     {% if att.visibility == 'internal' %}
-                                        <span class="pill pill-muted">{% trans"Internal" %}</span>
+                                        <span class="pill pill-muted">{% trans "Internal" %}</span>
                                     {% else %}
-                                        <span class="pill pill-navy">{% trans"External" %}</span>
+                                        <span class="pill pill-navy">{% trans "External" %}</span>
                                     {% endif %}
                                 </td>
                                 <td class="text-muted small">{{ att.uploaded_at|date:"M d, Y" }}</td>
@@ -256,9 +256,9 @@
                                 </td>
                                 <td>
                                     {% if collab.user %}
-                                    <span class="pill pill-navy">{% trans"Internal" %}</span>
+                                    <span class="pill pill-navy">{% trans "Internal" %}</span>
                                     {% else %}
-                                    <span class="pill pill-muted">{% trans"External" %}</span>
+                                    <span class="pill pill-muted">{% trans "External" %}</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -340,7 +340,7 @@
                         {% if tracked.tracked_by %}
                         <span>{{ tracked.tracked_by.get_full_name|default:tracked.tracked_by.username }}</span>
                         {% else %}
-                        <span class="pill pill-brass">{% trans"Unclaimed" %}</span>
+                        <span class="pill pill-brass">{% trans "Unclaimed" %}</span>
                         {% endif %}
                     </li>
                     <li class="mb-3">
@@ -350,9 +350,9 @@
                     <li class="mb-3">
                         <small class="text-muted d-block text-uppercase" style="letter-spacing: 0.5px;">{% trans "Harbor Status" %}</small>
                         {% if tracked.harbor_push_status == 'pushed' %}
-                        <span class="pill pill-success"><i class="bi bi-check me-1"></i>{% trans"Pushed to Harbor" %}</span>
+                        <span class="pill pill-success"><i class="bi bi-check me-1"></i>{% trans "Pushed to Harbor" %}</span>
                         {% elif tracked.harbor_push_status == 'failed' %}
-                        <span class="pill pill-error">{% trans"Push Failed" %}</span>
+                        <span class="pill pill-error">{% trans "Push Failed" %}</span>
                         {% else %}
                         <span class="text-muted">{% trans "Not pushed" %}</span>
                         {% endif %}
