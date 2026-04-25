@@ -229,15 +229,23 @@ class Command(BaseCommand):
                 "ON CONFLICT DO NOTHING"
             )
 
-            # Create missing core tables that the rewritten core.0001 would have created
-            _ensure_table(cursor, 'core_bountyprofile', """
-                CREATE TABLE core_bountyprofile (
-                    id bigserial PRIMARY KEY,
-                    anthropic_api_key varchar(255) NOT NULL DEFAULT '',
-                    organization_name varchar(255) NOT NULL DEFAULT '',
-                    user_id uuid NOT NULL UNIQUE REFERENCES keel_user(id) ON DELETE CASCADE
-                )
-            """, self.stdout)
+            # Create core_bountyprofile only if the post-rename table doesn't already exist.
+            # After 0003_rename_app_label runs, the table lives at bounty_core_bountyprofile
+            # and recreating the legacy name causes 0003 to crash on its next run with
+            # "relation bounty_core_bountyprofile already exists".
+            cursor.execute(
+                "SELECT EXISTS (SELECT 1 FROM information_schema.tables "
+                "WHERE table_name = 'bounty_core_bountyprofile')"
+            )
+            if not cursor.fetchone()[0]:
+                _ensure_table(cursor, 'core_bountyprofile', """
+                    CREATE TABLE core_bountyprofile (
+                        id bigserial PRIMARY KEY,
+                        anthropic_api_key varchar(255) NOT NULL DEFAULT '',
+                        organization_name varchar(255) NOT NULL DEFAULT '',
+                        user_id uuid NOT NULL UNIQUE REFERENCES keel_user(id) ON DELETE CASCADE
+                    )
+                """, self.stdout)
 
             # Re-record core migrations as applied (they may have been cleared)
             for name in ['0001_initial', '0002_ensure_keel_accounts']:
