@@ -24,6 +24,14 @@ urlpatterns = [
     path('', include('opportunities.portal_urls')),
 
     # Auth
+    # Canonical login lives at /accounts/login/. The legacy /auth/login/
+    # path is preserved as a 301 to keep old bookmarks and inbound links
+    # working. Pattern is mounted BEFORE the auth/ include so it wins
+    # the resolver match. (ISSUE-019)
+    path(
+        'auth/login/',
+        RedirectView.as_view(url='/accounts/login/', permanent=True),
+    ),
     path('auth/', include('core.urls')),
     # Custom login/logout views using our styled templates (before allauth)
     # so /accounts/login/ uses the shared keel LoginForm (which sets
