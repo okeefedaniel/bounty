@@ -245,34 +245,42 @@ class Command(BaseCommand):
                 ")"
             )
 
-            # Create core_bountyprofile only if the post-rename table doesn't already exist.
-            # After 0003_rename_app_label runs, the table lives at bounty_core_bountyprofile
-            # and recreating the legacy name causes 0003 to crash on its next run with
-            # "relation bounty_core_bountyprofile already exists".
+            # Legacy-DB recovery path. Only fire when there is actual evidence that a
+            # legacy or already-renamed schema exists — on a truly fresh DB neither
+            # table is present and we must NOT pre-create core_bountyprofile, because
+            # 0001_initial will create bounty_core_bountyprofile and 0003's rename
+            # would then collide with "relation bounty_core_bountyprofile already exists".
             cursor.execute(
-                "SELECT EXISTS (SELECT 1 FROM information_schema.tables "
-                "WHERE table_name = 'bounty_core_bountyprofile')"
+                "SELECT "
+                "  EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'core_bountyprofile') "
+                "  OR EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'bounty_core_bountyprofile')"
             )
-            if not cursor.fetchone()[0]:
-                _ensure_table(cursor, 'core_bountyprofile', """
-                    CREATE TABLE core_bountyprofile (
-                        id bigserial PRIMARY KEY,
-                        anthropic_api_key varchar(255) NOT NULL DEFAULT '',
-                        organization_name varchar(255) NOT NULL DEFAULT '',
-                        user_id uuid NOT NULL UNIQUE REFERENCES keel_user(id) ON DELETE CASCADE
-                    )
-                """, self.stdout)
+            legacy_or_migrated = cursor.fetchone()[0]
 
-            # Re-record core migrations as applied (they may have been cleared)
-            for name in ['0001_initial', '0002_ensure_keel_accounts']:
+            if legacy_or_migrated:
                 cursor.execute(
-                    "INSERT INTO django_migrations (app, name, applied) "
-                    "SELECT 'core', %s, NOW() "
-                    "WHERE NOT EXISTS ("
-                    "  SELECT 1 FROM django_migrations "
-                    "  WHERE app='core' AND name=%s"
-                    ")",
-                    [name, name],
+                    "SELECT EXISTS (SELECT 1 FROM information_schema.tables "
+                    "WHERE table_name = 'bounty_core_bountyprofile')"
                 )
+                if not cursor.fetchone()[0]:
+                    _ensure_table(cursor, 'core_bountyprofile', """
+                        CREATE TABLE core_bountyprofile (
+                            id bigserial PRIMARY KEY,
+                            anthropic_api_key varchar(255) NOT NULL DEFAULT '',
+                            organization_name varchar(255) NOT NULL DEFAULT '',
+                            user_id uuid NOT NULL UNIQUE REFERENCES keel_user(id) ON DELETE CASCADE
+                        )
+                    """, self.stdout)
+
+                for name in ['0001_initial', '0002_ensure_keel_accounts']:
+                    cursor.execute(
+                        "INSERT INTO django_migrations (app, name, applied) "
+                        "SELECT 'core', %s, NOW() "
+                        "WHERE NOT EXISTS ("
+                        "  SELECT 1 FROM django_migrations "
+                        "  WHERE app='core' AND name=%s"
+                        ")",
+                        [name, name],
+                    )
 
         self.stdout.write(self.style.SUCCESS('All keel_accounts tables ensured. Running migrate next.'))
