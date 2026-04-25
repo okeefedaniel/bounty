@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-principles.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/docklabs-check-principles.sh\"",
             "timeout": 5
           }
         ]
