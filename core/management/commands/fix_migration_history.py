@@ -38,6 +38,16 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         with connection.cursor() as cursor:
+            # Dedupe django_migrations rows accumulated by prior buggy runs
+            # of this command (ON CONFLICT DO NOTHING was a no-op without a
+            # unique constraint). Idempotent: a no-op once the table is clean.
+            cursor.execute(
+                "DELETE FROM django_migrations a USING django_migrations b "
+                "WHERE a.id > b.id AND a.app = b.app AND a.name = b.name"
+            )
+            if cursor.rowcount:
+                self.stdout.write(f'  Removed {cursor.rowcount} duplicate django_migrations rows')
+
             self.stdout.write('Ensuring keel_accounts tables exist...')
 
             # 1. keel_user (custom db_table)
