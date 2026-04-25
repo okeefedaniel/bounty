@@ -19,3 +19,6 @@ media/
 .idea/
 *.swp
 *.swo
+
+# Claude Code runtime state
+.claude/*.lock
