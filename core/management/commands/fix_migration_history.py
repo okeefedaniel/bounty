@@ -216,17 +216,23 @@ class Command(BaseCommand):
             for name in migrations_to_fake:
                 cursor.execute(
                     "INSERT INTO django_migrations (app, name, applied) "
-                    "VALUES ('keel_accounts', %s, NOW()) "
-                    "ON CONFLICT DO NOTHING",
-                    [name],
+                    "SELECT 'keel_accounts', %s, NOW() "
+                    "WHERE NOT EXISTS ("
+                    "  SELECT 1 FROM django_migrations "
+                    "  WHERE app='keel_accounts' AND name=%s"
+                    ")",
+                    [name, name],
                 )
 
             # Record keel_search if not present
             cursor.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
             cursor.execute(
                 "INSERT INTO django_migrations (app, name, applied) "
-                "VALUES ('keel_search', '0001_initial', NOW()) "
-                "ON CONFLICT DO NOTHING"
+                "SELECT 'keel_search', '0001_initial', NOW() "
+                "WHERE NOT EXISTS ("
+                "  SELECT 1 FROM django_migrations "
+                "  WHERE app='keel_search' AND name='0001_initial'"
+                ")"
             )
 
             # Create core_bountyprofile only if the post-rename table doesn't already exist.
@@ -251,7 +257,12 @@ class Command(BaseCommand):
             for name in ['0001_initial', '0002_ensure_keel_accounts']:
                 cursor.execute(
                     "INSERT INTO django_migrations (app, name, applied) "
-                    "VALUES ('core', %s, NOW()) ON CONFLICT DO NOTHING", [name]
+                    "SELECT 'core', %s, NOW() "
+                    "WHERE NOT EXISTS ("
+                    "  SELECT 1 FROM django_migrations "
+                    "  WHERE app='core' AND name=%s"
+                    ")",
+                    [name, name],
                 )
 
         self.stdout.write(self.style.SUCCESS('All keel_accounts tables ensured. Running migrate next.'))
