@@ -32,6 +32,15 @@ python manage.py migrate
 python manage.py runserver
 ```
 
+## Git hooks
+
+Run `scripts/install-git-hooks.sh` once per clone. It points `core.hooksPath`
+at `scripts/git-hooks/`, which installs a pre-push hook that verifies the
+keel pin in `requirements.txt` is reachable from a branch or tag on the keel
+remote (and not a `refs/pull/*` SHA that pip can't fetch — that previously
+took both bounty services down on Railway). Bypass for emergencies with
+`SKIP_KEEL_PIN_CHECK=1` or `git push --no-verify`.
+
 ## License
 
 MIT
