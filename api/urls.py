@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from . import views
 from .helm_feed import bounty_helm_feed
+from .helm_inbox import bounty_helm_feed_inbox
 
 router = DefaultRouter()
 router.register(r'opportunities', views.FederalOpportunityViewSet)
@@ -14,5 +15,6 @@ app_name = 'api'
 
 urlpatterns = [
     path('helm-feed/', bounty_helm_feed, name='helm-feed'),
+    path('helm-feed/inbox/', bounty_helm_feed_inbox, name='helm-feed-inbox'),
     path('', include(router.urls)),
 ]

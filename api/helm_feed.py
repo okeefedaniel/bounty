@@ -127,26 +127,13 @@ def bounty_helm_feed(request):
         })
 
     # ── Alerts ───────────────────────────────────────────────────
+    # Aggregate alerts only — anything that depends on which user is
+    # looking belongs in /api/v1/helm-feed/inbox/. The previous
+    # "X high-relevance match awaiting review" alert lived here but
+    # counted globally across all users while its deep link
+    # (/matching/recommendations/) is filtered to the requesting user,
+    # producing the "1 awaiting review → 0 visible" bug.
     alerts = []
-
-    # High-relevance matches not yet viewed
-    try:
-        from matching.models import OpportunityMatch
-        new_high_matches = OpportunityMatch.objects.filter(
-            status='new',
-            relevance_score__gte=getattr(settings, 'GRANT_MATCH_HIGH_SCORE', 90),
-        ).count()
-        if new_high_matches > 0:
-            alerts.append({
-                'id': 'bounty-high-matches',
-                'type': 'milestone',
-                'title': f'{new_high_matches} high-relevance match{"es" if new_high_matches != 1 else ""} awaiting review',
-                'severity': 'info',
-                'since': '',
-                'deep_link': f'{base_url}/matching/recommendations/',
-            })
-    except Exception:
-        pass
 
     return {
         'product': 'bounty',
