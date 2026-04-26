@@ -56,18 +56,17 @@ class RecommendedMatchesView(LoginRequiredMixin, ListView):
             tracked_by=self.request.user,
         )
 
-        qs = OpportunityMatch.objects.filter(
-            user=self.request.user,
-        ).exclude(
-            status=OpportunityMatch.Status.DISMISSED,
-        ).select_related('federal_opportunity').annotate(
-            is_tracked=Exists(tracked_subquery),
+        # NOTE: do NOT mutate match status here — GETs must be side-effect
+        # free. Auto-promote NEW -> VIEWED happens via the explicit
+        # MarkMatchesViewedView POST endpoint (fired by the recommendations
+        # template on page load). Mutating in get_queryset() de-syncs the
+        # 'X new matches' counter that Helm's inbox endpoint reads.
+        return (
+            OpportunityMatch.objects.filter(user=self.request.user)
+            .exclude(status=OpportunityMatch.Status.DISMISSED)
+            .select_related('federal_opportunity')
+            .annotate(is_tracked=Exists(tracked_subquery))
         )
-
-        qs.filter(status=OpportunityMatch.Status.NEW).update(
-            status=OpportunityMatch.Status.VIEWED,
-        )
-        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -82,6 +81,29 @@ class RecommendedMatchesView(LoginRequiredMixin, ListView):
         ).exists()
         context['has_ai_access'] = get_bounty_profile(self.request.user).has_ai_access
         return context
+
+
+class MarkMatchesViewedView(LoginRequiredMixin, View):
+    """POST-only: bulk-promote the user's NEW matches to VIEWED.
+
+    Replaces the implicit GET-time auto-promote in RecommendedMatchesView.
+    Fired by the recommendations template on page load via a fetch() call,
+    so the user-perceived behavior is unchanged ("load page -> matches
+    are now reviewed") but reads remain side-effect free. Returns JSON
+    with the number of rows updated; redirects to the recommendations
+    page on non-AJAX submits so a plain HTML form still works.
+    """
+
+    http_method_names = ['post']
+
+    def post(self, request):
+        updated = OpportunityMatch.objects.filter(
+            user=request.user, status=OpportunityMatch.Status.NEW,
+        ).update(status=OpportunityMatch.Status.VIEWED)
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'ok', 'updated': updated})
+        return redirect('matching:recommendations')
 
 
 class RunMatchingView(LoginRequiredMixin, View):

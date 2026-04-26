@@ -214,6 +214,20 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!csrfInput) return;
     const csrfToken = csrfInput.value;
 
+    // Mark all NEW matches as VIEWED for this user. This is an explicit
+    // POST (not a GET-time side-effect) so reads remain idempotent and
+    // Helm's per-user inbox count stays in sync. Fire-and-forget — the
+    // page renders the same regardless of whether the call succeeds.
+    {% if matches and new_matches %}
+    fetch('{% url "matching:mark-matches-viewed" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+    });
+    {% endif %}
+
     document.querySelectorAll('.feedback-widget').forEach(function(widget) {
         const matchId = widget.dataset.matchId;
         const reasonContainer = widget.querySelector('.feedback-reason');
