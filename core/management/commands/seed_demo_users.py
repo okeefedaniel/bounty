@@ -1,14 +1,15 @@
 """Seed demo users for Bounty.
 
 Creates one KeelUser + ProductAccess per DEMO_ROLES entry with username=role
-so Keel's demo_login_view can authenticate them.
+so Keel's demo_login_view can sign them in. Demo users have unusable
+passwords; the only entry path is the one-click `demo_login_view` buttons
+at `/demo-login/`. See keel CLAUDE.md → "Demo authentication — passwordless
+contract" for the full rationale.
 
 Usage:
     python manage.py seed_demo_users
     python manage.py seed_demo_users --dry-run
 """
-import os
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
@@ -17,7 +18,6 @@ from core.models import BountyProfile
 from keel.accounts.models import ProductAccess
 
 User = get_user_model()
-DEMO_PASSWORD = os.environ.get('DEMO_PASSWORD', 'demo2026!')
 
 
 class Command(BaseCommand):
@@ -49,7 +49,7 @@ class Command(BaseCommand):
                     'is_superuser': is_admin,
                 },
             )
-            user.set_password(DEMO_PASSWORD)
+            user.set_unusable_password()
             user.save()
 
             # Create or update ProductAccess
