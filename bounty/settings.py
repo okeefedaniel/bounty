@@ -352,7 +352,6 @@ KEEL_AUDIT_LOG_MODEL = 'bounty_core.AuditLog'
 KEEL_NOTIFICATION_MODEL = 'bounty_core.Notification'
 KEEL_NOTIFICATION_PREFERENCE_MODEL = 'bounty_core.NotificationPreference'
 KEEL_NOTIFICATION_LOG_MODEL = 'bounty_core.NotificationLog'
-KEEL_NOTIFICATION_CATEGORIES = ['Bounty', 'Keel']
 KEEL_CSP_POLICY = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self'"
 from keel.core.fleet import FLEET as KEEL_FLEET_PRODUCTS  # noqa: E402,F401
 # Site
