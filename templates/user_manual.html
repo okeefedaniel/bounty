@@ -1,0 +1,560 @@
+{% extends "base.html" %}
+
+{% block page_title %}User Manual{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .manual-nav {
+        position: sticky;
+        top: 80px;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+    }
+    .manual-nav .nav-link {
+        color: var(--text-secondary, #4a5568);
+        padding: 0.35rem 0.75rem;
+        font-size: 0.875rem;
+        border-left: 3px solid transparent;
+        border-radius: 0;
+    }
+    .manual-nav .nav-link:hover,
+    .manual-nav .nav-link.active {
+        color: var(--ct-blue, #1565c0);
+        border-left-color: var(--ct-blue, #1565c0);
+        background-color: rgba(21, 101, 192, 0.06);
+    }
+    .manual-section {
+        scroll-margin-top: 90px;
+    }
+    .manual-section h2 {
+        border-bottom: 2px solid #cfd8dc;
+        padding-bottom: 0.5rem;
+    }
+    .manual-section h3 {
+        color: #1565c0;
+    }
+    .role-pill {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+    }
+    .role-admin       { background-color: #263238; color: #ffffff; }
+    .role-coordinator { background-color: #e3f2fd; color: #1565c0; }
+    .role-analyst     { background-color: #ede7f6; color: #4527a0; }
+    .role-viewer      { background-color: #e8f5e9; color: #2e7d32; }
+    .collab-lead        { background-color: #fff3e0; color: #e65100; }
+    .collab-contributor { background-color: #e8f5e9; color: #2e7d32; }
+    .collab-reviewer    { background-color: #ede7f6; color: #4527a0; }
+    .collab-observer    { background-color: #eceff1; color: #455a64; }
+    .workflow-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 0.75rem 0;
+    }
+    .workflow-step .step-num {
+        flex-shrink: 0;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background-color: #1565c0;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.875rem;
+    }
+    .status-flow {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .status-flow .badge {
+        font-size: 0.8125rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+<div class="row">
+    <div class="col-lg-3 d-none d-lg-block">
+        <nav class="manual-nav" aria-label="Manual sections">
+            <h6 class="fw-bold text-uppercase text-muted small mb-3 px-2">Contents</h6>
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="#overview"><i class="bi bi-house me-2"></i>Overview</a></li>
+                <li class="nav-item"><a class="nav-link" href="#roles"><i class="bi bi-shield-lock me-2"></i>Roles</a></li>
+                <li class="nav-item"><a class="nav-link" href="#getting-started"><i class="bi bi-rocket-takeoff me-2"></i>Getting Started</a></li>
+                <li class="nav-item"><a class="nav-link" href="#portal"><i class="bi bi-globe me-2"></i>Public Portal</a></li>
+                <li class="nav-item"><a class="nav-link" href="#tracked"><i class="bi bi-bookmark-star me-2"></i>Tracked Opportunities</a></li>
+                <li class="nav-item"><a class="nav-link" href="#matching"><i class="bi bi-stars me-2"></i>AI Matching</a></li>
+                <li class="nav-item"><a class="nav-link" href="#preferences"><i class="bi bi-sliders me-2"></i>Preferences</a></li>
+                <li class="nav-item"><a class="nav-link" href="#collab"><i class="bi bi-people me-2"></i>Collaboration</a></li>
+                <li class="nav-item"><a class="nav-link" href="#signing"><i class="bi bi-pen me-2"></i>Signing</a></li>
+                <li class="nav-item"><a class="nav-link" href="#harbor"><i class="bi bi-link-45deg me-2"></i>Harbor Handoff</a></li>
+                <li class="nav-item"><a class="nav-link" href="#helm"><i class="bi bi-inbox me-2"></i>Helm Inbox</a></li>
+                <li class="nav-item"><a class="nav-link" href="#notifications"><i class="bi bi-bell me-2"></i>Notifications</a></li>
+                <li class="nav-item"><a class="nav-link" href="#statuses"><i class="bi bi-diagram-3 me-2"></i>Status Reference</a></li>
+                <li class="nav-item"><a class="nav-link" href="#api"><i class="bi bi-code-slash me-2"></i>Programmatic API</a></li>
+                <li class="nav-item"><a class="nav-link" href="#shortcuts"><i class="bi bi-keyboard me-2"></i>Keyboard Shortcuts</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="col-lg-9">
+
+        <div class="d-lg-none mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <button class="btn btn-outline-primary btn-sm w-100" type="button" data-bs-toggle="collapse" data-bs-target="#mobileToc">
+                        <i class="bi bi-list me-2"></i>Table of Contents
+                    </button>
+                    <div class="collapse mt-3" id="mobileToc">
+                        <div class="list-group list-group-flush">
+                            <a href="#overview" class="list-group-item list-group-item-action small">Overview</a>
+                            <a href="#roles" class="list-group-item list-group-item-action small">Roles</a>
+                            <a href="#getting-started" class="list-group-item list-group-item-action small">Getting Started</a>
+                            <a href="#portal" class="list-group-item list-group-item-action small">Public Portal</a>
+                            <a href="#tracked" class="list-group-item list-group-item-action small">Tracked Opportunities</a>
+                            <a href="#matching" class="list-group-item list-group-item-action small">AI Matching</a>
+                            <a href="#preferences" class="list-group-item list-group-item-action small">Preferences</a>
+                            <a href="#collab" class="list-group-item list-group-item-action small">Collaboration</a>
+                            <a href="#signing" class="list-group-item list-group-item-action small">Signing</a>
+                            <a href="#harbor" class="list-group-item list-group-item-action small">Harbor Handoff</a>
+                            <a href="#helm" class="list-group-item list-group-item-action small">Helm Inbox</a>
+                            <a href="#notifications" class="list-group-item list-group-item-action small">Notifications</a>
+                            <a href="#statuses" class="list-group-item list-group-item-action small">Status Reference</a>
+                            <a href="#api" class="list-group-item list-group-item-action small">Programmatic API</a>
+                            <a href="#shortcuts" class="list-group-item list-group-item-action small">Keyboard Shortcuts</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="fw-bold mb-1">Bounty User Manual</h1>
+                <p class="text-muted mb-0">Comprehensive guide to federal-funds discovery, matching, and tracking.</p>
+            </div>
+            <a href="{% url 'help' %}" class="btn btn-outline-primary btn-sm" title="Open the FAQ">
+                <i class="bi bi-question-circle me-1"></i> FAQ
+            </a>
+        </div>
+
+        <section id="overview" class="manual-section mb-5">
+            <h2 class="fw-bold mb-3"><i class="bi bi-house me-2 text-primary"></i>Overview</h2>
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4 lh-lg">
+                    <p>Bounty pulls federal grant opportunities from Grants.gov, scores them against your agency's priorities with AI, and gives a coordinator the tools to track each opportunity through preparation, internal approval, application, and award. Awarded opportunities hand off to <strong>Harbor</strong> for program management.</p>
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-globe text-primary fs-5 mt-1"></i>
+                                <div>
+                                    <strong>Public catalog</strong>
+                                    <p class="small text-muted mb-0">Federal opportunities synced from Grants.gov, browsable without login.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-stars text-primary fs-5 mt-1"></i>
+                                <div>
+                                    <strong>AI matching</strong>
+                                    <p class="small text-muted mb-0">Claude-scored relevance against personal + state preferences.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-bookmark-star text-primary fs-5 mt-1"></i>
+                                <div>
+                                    <strong>Coordinator pipeline</strong>
+                                    <p class="small text-muted mb-0">Watching → Preparing → Approved → Applied → Awarded, with collaborators and attachments.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start gap-2">
+                                <i class="bi bi-link-45deg text-primary fs-5 mt-1"></i>
+                                <div>
+                                    <strong>Suite handoffs</strong>
+                                    <p class="small text-muted mb-0">Manifest signs internal approval; Harbor receives the awarded program.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="roles" class="manual-section mb-5">
+            <h2 class="fw-bold mb-3"><i class="bi bi-shield-lock me-2 text-primary"></i>Roles</h2>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <p>Bounty roles are issued via Keel SSO and surfaced in your sidebar profile.</p>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr><th>Role</th><th>Capability</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="role-pill role-admin">Admin</span></td>
+                                    <td>Full access. Manage state preferences, all tracked opportunities, Harbor connection, demo data.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="role-pill role-coordinator">Coordinator</span></td>
+                                    <td>Drive opportunities. Claim, invite, transition, send for signing, push to Harbor, manage state preferences.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="role-pill role-analyst">Analyst</span></td>
+                                    <td>Track, run AI matching, comment, attach files on opportunities they're invited to.</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="role-pill role-viewer">Viewer</span></td>
+                                    <td>Read-only across the dashboard and opportunities they're invited to.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="small text-muted mt-3 mb-0">Suite-level <code>system_admin</code> inherits Admin behavior on Bounty.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="getting-started" class="manual-section mb-5">
+            <h2 class="fw-bold mb-3"><i class="bi bi-rocket-takeoff me-2 text-primary"></i>Getting Started</h2>
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body p-4 lh-lg">
+                    <h5 class="fw-bold"><i class="bi bi-box-arrow-in-right me-2 text-primary"></i>Signing in</h5>
+                    <div class="workflow-step"><span class="step-num">1</span><span>Visit <code>https://bounty.docklabs.ai/</code> (or your tenant's host).</span></div>
+                    <div class="workflow-step"><span class="step-num">2</span><span>Click <strong>Sign in with DockLabs</strong> (the suite OIDC button).</span></div>
+                    <div class="workflow-step"><span class="step-num">3</span><span>You'll land on <code>/dashboard/</code>.</span></div>
+                    <div class="alert alert-info border-0 small mt-3 mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        If you're already signed in to another DockLabs product, the redirect is seamless — no second login form.
+                    </div>
+                </div>
+            </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 lh-lg">
+                    <h5 class="fw-bold"><i class="bi bi-eye me-2 text-primary"></i>What you'll see first</h5>
+                    <ul class="mb-0">
+                        <li><strong>Dashboard</strong> — summary of your tracked opportunities, new high-relevance matches, and pending actions.</li>
+                        <li><strong>Sidebar</strong> — Federal Opportunities (public catalog), Tracked, AI Matching (if you have AI access), and Harbor Connection (coordinators).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="portal" class="manual-section mb-5">
+            <h2 class="fw-bold mb-3"><i class="bi bi-globe me-2 text-primary"></i>Federal Opportunities (Public Portal)</h2>
+            <p><code>/</code> and <code>/opportunities/</code> — the public-facing catalog of every federal opportunity Bounty has cached from Grants.gov. No login required.</p>
+            <p>Each opportunity carries:</p>
+            <ul>
+                <li>Title, opportunity number (NOFO), and opportunity ID.</li>
+                <li>Agency name and code.</li>
+                <li>Category and funding instrument (grant, cooperative agreement, procurement contract, other).</li>
+                <li>CFDA numbers (Catalog of Federal Domestic Assistance).</li>
+                <li>Award range — floor, ceiling, expected number of awards, total funding pool.</li>
+                <li>Post date, close date, and archive date.</li>
+                <li>Eligibility — applicant types and free-text narrative.</li>
+                <li>Status — Posted, Closed, Archived, or Forecasted.</li>
+                <li>Grants.gov URL — deep link to the source listing.</li>
+            </ul>
+
+            <h3 class="fw-bold mt-4">Search &amp; filter</h3>
+            <ul class="mb-0">
+                <li>Free-text search on title and description.</li>
+                <li>Filter by agency, status, and category.</li>
+                <li>Instant typeahead — <code>/opportunities/instant/?q=…</code>.</li>
+                <li>AI chat search — <code>/opportunities/chat/?q=…</code> returns a Claude narrative match.</li>
+            </ul>
+        </section>
+
+        <section id="tracked" class="manual-section mb-5">
+            <h2 class="fw-bold mb-3"><i class="bi bi-bookmark-star me-2 text-primary"></i>Tracked Opportunities</h2>
+            <p><code>/tracked/</code> — the coordinator pipeline. Each row represents a federal opportunity your team is actively working.</p>
+            <p>Each tracked opportunity carries the source federal opportunity, the current principal driver (<code>tracked_by</code>), status, priority, notes, collaborators, attachments, full status history, and Harbor push status.</p>
+
+            <h3 class="fw-bold mt-4">Lifecycle</h3>
+            <p>Bounty follows the DockLabs Project Lifecycle Standard:</p>
+            <p class="small text-muted">claim → invite collaborators → diligence (notes + attachments) → stage progression → optional handoff to Manifest for signing → signed-doc roundtrip → optional downstream export to Harbor</p>
+            <div class="card bg-light border-0 mb-3">
+                <div class="card-body small">
+<pre class="mb-0">watching → preparing → approved → applied → awarded
+                                 \         \→ declined
+                                  → applied (no approval)
+preparing → watching (back)
+approved → preparing (back)
+watching → declined (direct decline)</pre>
+                </div>
+            </div>
+            <p class="small text-muted"><strong>approved</strong> is the gated state where Manifest signing fires. Use it when your agency requires an internal sign-off on the application package before submission.</p>
+
+            <h3 class="fw-bold mt-4">Tracking a new opportunity</h3>
+            <div class="workflow-step"><span class="step-num">1</span><span>From a public opportunity detail page, click <strong>Track this opportunity</strong>.</span></div>
+            <div class="workflow-step"><span class="step-num">2</span><span>Bounty creates a tracked record with you as the principal driver, status <strong>Watching</strong>, and opens an assignment row recording the claim.</span></div>
+            <div class="workflow-step"><span class="step-num">3</span><span>The opportunity is now visible at <code>/tracked/</code>.</span></div>
+
+            <h3 class="fw-bold mt-4">Claim &amp; release</h3>
+            <ul class="mb-0">
+                <li><strong>Claim</strong> — make yourself the driver. Closes any prior open assignment, opens a new one with <code>assignment_type=CLAIMED</code> (or <code>MANAGER_ASSIGNED</code> if a manager assigns on someone else's behalf).</li>
+                <li><strong>Release</strong> — return the opportunity to the unowned pool. Closes the active assignment with <code>status=RELEASED</code>.</li>
+            </ul>
+        </section>
+
+        <section id="matching" class="manual-section mb-5">
+            <h2 class="fw-bold mb-3"><i class="bi bi-stars me-2 text-primary"></i>AI Matching</h2>
+            <p><code>/matching/recommendations/</code> — AI-scored matches between your preferences and every open federal opportunity. Available to users with an Anthropic API key configured (personal on profile, or the suite-wide <code>ANTHROPIC_API_KEY</code>).</p>
+
+            <p>Each match carries:</p>
+            <ul>
+                <li><strong>Relevance score</strong> (0–100) from Claude.</li>
+                <li><strong>Explanation</strong> — short narrative for fit/no-fit.</li>
+                <li><strong>Status</strong> — New, Viewed, Saved, Dismissed.</li>
+                <li><strong>Feedback</strong> — thumbs up/down with reason (wrong focus, budget too large/small, already aware, not eligible, not relevant, other). Feedback feeds future scoring.</li>
+            </ul>
+
+            <h3 class="fw-bold mt-4">Score thresholds</h3>
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Setting</th><th>Default</th><th>Meaning</th></tr></thead>
+                            <tbody>
+                                <tr><td><code>GRANT_MATCH_MIN_SCORE</code></td><td>60</td><td>Minimum stored as a match.</td></tr>
+                                <tr><td><code>GRANT_MATCH_NOTIFY_SCORE</code></td><td>75</td><td>Fires <code>grant_match_found</code>.</td></tr>
+                                <tr><td><code>GRANT_MATCH_HIGH_SCORE</code></td><td>90</td><td>Fires <code>grant_match_high_score</code> (priority high). Threshold for Helm's Awaiting Me column.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="fw-bold mt-4">Running matching</h3>
+            <ul class="mb-0">
+                <li><strong>Run matching</strong> — <code>/matching/recommendations/run/</code> — POST scans all open federal opportunities against your preferences.</li>
+                <li><strong>Mark viewed</strong> — flips your NEW matches to VIEWED.</li>
+                <li><strong>Dismiss</strong> — <code>/matching/dismiss/&lt;id&gt;/</code>.</li>
+                <li><strong>Track and dismiss</strong> — <code>/matching/track-dismiss/&lt;id&gt;/</code> — track the underlying opportunity and dismiss the match in one click.</li>
+                <li><strong>Feedback</strong> — <code>/matching/feedback/&lt;id&gt;/</code> — thumbs up/down with optional reason.</li>
+            </ul>
+        </section>
+
+        <section id="preferences" class="manual-section mb-5">
+            <h2 class="fw-bold mb-3"><i class="bi bi-sliders me-2 text-primary"></i>Match &amp; State Preferences</h2>
+
+            <h3 class="fw-bold mt-2">Match Preferences (personal)</h3>
+            <p><code>/matching/preferences/</code> — your personal preferences for AI matching.</p>
+            <ul>
+                <li><strong>Focus areas</strong> — multi-select: Education; Health &amp; Human Services; Environment &amp; Energy; Infrastructure &amp; Transportation; Public Safety; Housing &amp; Community Development; Economic Development; Arts &amp; Culture; Technology &amp; Innovation; Agriculture &amp; Food; Workforce Development; Justice &amp; Legal Services; Other.</li>
+                <li><strong>Keywords</strong> — free-text terms describing your priorities.</li>
+                <li><strong>Funding range</strong> — minimum and maximum dollar amounts.</li>
+                <li><strong>Description</strong> — narrative paragraph the AI uses for context.</li>
+                <li><strong>Digest frequency</strong> — None, Daily, or Weekly. Cadence of match-summary emails.</li>
+            </ul>
+
+            <h3 class="fw-bold mt-4">State Preferences (shared)</h3>
+            <p><code>/matching/state-preferences/</code> — coordinator-only. The state-wide matching baseline that every user inherits. Same fields as Match Preferences. Only one is active at a time.</p>
+            <p class="small text-muted mb-0">When matching runs, Bounty merges your personal preferences with the active state preference. Individual users inherit the state-wide baseline without retyping it.</p>
+        </section>
+
+        <section id="collab" class="manual-section mb-5">
+            <h2 class="fw-bold mb-3"><i class="bi bi-people me-2 text-primary"></i>Collaboration</h2>
+
+            <h3 class="fw-bold mt-2">Per-opportunity roles</h3>
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Role</th><th>What they can do</th></tr></thead>
+                            <tbody>
+                                <tr><td><span class="role-pill collab-lead">LEAD</span></td><td>Drive the opportunity. Transition status, manage collaborators, send for signing, push to Harbor.</td></tr>
+                                <tr><td><span class="role-pill collab-contributor">CONTRIBUTOR</span></td><td>Update notes, attach files, comment.</td></tr>
+                                <tr><td><span class="role-pill collab-reviewer">REVIEWER</span></td><td>Read everything; comment on notes and attachments.</td></tr>
+                                <tr><td><span class="role-pill collab-observer">OBSERVER</span></td><td>Read-only access.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <p class="small text-muted">Only LEAD / CONTRIBUTOR / REVIEWER / OBSERVER are valid (suite-wide convention).</p>
+
+            <h3 class="fw-bold mt-4">Inviting collaborators</h3>
+            <p><code>/tracked/&lt;id&gt;/collaborate/</code> — pick a user (or enter an email for an external invitee) and a role. The invitee gets an in-app notification.</p>
+
+            <h3 class="fw-bold mt-4">Attachments</h3>
+            <p class="mb-0"><code>/tracked/&lt;id&gt;/attachments/</code> — drag-and-drop file uploads. Each carries a <strong>source</strong> (manual upload, manifest_signed, etc.) and a <strong>visibility</strong> flag. Files attached as <code>manifest_signed</code> are produced automatically by the Manifest signing roundtrip — you never upload them by hand.</p>
+        </section>
+
+        <section id="signing" class="manual-section mb-5">
+            <h2 class="fw-bold mb-3"><i class="bi bi-pen me-2 text-primary"></i>Internal Approval &amp; Manifest Signing</h2>
+            <p>When an agency requires an internal sign-off on the application package before submission, Bounty hands the package to <strong>Manifest</strong> for an ordered-signer workflow.</p>
+
+            <h3 class="fw-bold mt-4">Send for signing</h3>
+            <p><code>/tracked/&lt;id&gt;/sign/send/</code> — LEAD only. Available when the opportunity is in <em>preparing</em> status and Manifest is configured (<code>MANIFEST_URL</code> + <code>MANIFEST_API_TOKEN</code>).</p>
+            <p>When Manifest finishes the packet, the inbound webhook fires. Bounty:</p>
+            <ol>
+                <li>Files the signed PDF as an <code>OpportunityAttachment</code> with <code>source=manifest_signed</code> and the Manifest packet UUID.</li>
+                <li>Transitions the opportunity to <strong>approved</strong>.</li>
+                <li>Notifies the LEAD and active collaborators.</li>
+                <li>Registers the attachment for FOIA export.</li>
+            </ol>
+
+            <h3 class="fw-bold mt-4">Local-sign fallback</h3>
+            <p class="mb-0"><code>/tracked/&lt;id&gt;/sign/local/</code> — when Manifest isn't configured (standalone deployment), the LEAD can upload a manually-signed PDF instead. The attachment is filed with <code>source=local_signed</code> and the opportunity transitions to <strong>approved</strong>. The Send-for-signing button is hidden when Manifest isn't available — there are no silent no-ops.</p>
+        </section>
+
+        <section id="harbor" class="manual-section mb-5">
+            <h2 class="fw-bold mb-3"><i class="bi bi-link-45deg me-2 text-primary"></i>Harbor Handoff (Award)</h2>
+            <p>When an opportunity is <strong>awarded</strong>, the LEAD can push it into Harbor as a <code>GrantProgram</code> so program staff can manage applications, awards, and compliance there.</p>
+
+            <h3 class="fw-bold mt-4">Configure Harbor</h3>
+            <p><code>/integration/harbor/settings/</code> — coordinator-only. Provide the Harbor URL and API token.</p>
+
+            <h3 class="fw-bold mt-4">Push to Harbor</h3>
+            <p><code>/integration/harbor/push/&lt;id&gt;/</code> — LEAD-only. Available when the opportunity is in <em>awarded</em> status and Harbor settings are configured.</p>
+            <p class="mb-0">The push is best-effort. On success, <code>tracked.harbor_program_id</code> is set to Harbor's program ID and <code>harbor_push_status</code> flips to <em>Pushed</em>. On failure, status flips to <em>Failed</em> with a retry control. The button is hidden when Harbor isn't configured.</p>
+        </section>
+
+        <section id="helm" class="manual-section mb-5">
+            <h2 class="fw-bold mb-3"><i class="bi bi-inbox me-2 text-primary"></i>Helm Inbox Integration</h2>
+            <p>Helm's per-user <strong>Awaiting Me</strong> column queries Bounty's <code>/api/v1/helm-feed/inbox/</code> endpoint and surfaces, for each user:</p>
+            <ul>
+                <li><strong>NEW high-relevance matches</strong> — <code>OpportunityMatch</code> rows with <code>status=NEW</code> and <code>relevance_score &gt;= GRANT_MATCH_HIGH_SCORE</code> (default 90), capped at 50, ordered by score descending.</li>
+                <li><strong>Unread notifications</strong>.</li>
+            </ul>
+            <p class="mb-0 small text-muted">Each item carries a deep link back into Bounty (typically <code>/matching/recommendations/</code>) so the user can act with one click. The aggregate feed at <code>/api/v1/helm-feed/</code> powers Helm's "Across the suite" cards.</p>
+        </section>
+
+        <section id="notifications" class="manual-section mb-5">
+            <h2 class="fw-bold mb-3"><i class="bi bi-bell me-2 text-primary"></i>Notifications</h2>
+            <p>Bounty notification events:</p>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Event</th><th>When it fires</th></tr></thead>
+                            <tbody>
+                                <tr><td><code>grant_match_found</code></td><td>A new opportunity match scored ≥ <code>GRANT_MATCH_NOTIFY_SCORE</code> (75).</td></tr>
+                                <tr><td><code>grant_match_high_score</code></td><td>A new match scored ≥ <code>GRANT_MATCH_HIGH_SCORE</code> (90). Priority high.</td></tr>
+                                <tr><td><code>opportunity_collaborator_invited</code></td><td>You were added as a collaborator on a tracked opportunity.</td></tr>
+                                <tr><td><code>opportunity_status_changed</code></td><td>A tracked opportunity you're on transitioned.</td></tr>
+                                <tr><td><code>opportunity_signed</code></td><td>A Manifest signing roundtrip completed for your tracked opportunity.</td></tr>
+                                <tr><td><code>harbor_push_succeeded</code></td><td>An awarded opportunity was pushed to Harbor successfully.</td></tr>
+                                <tr><td><code>harbor_push_failed</code></td><td>A push to Harbor failed; retry available.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <p class="small text-muted mt-3 mb-0">Channels (in-app + email) are user-configurable at <a href="/notifications/preferences/">/notifications/preferences/</a>. The link is in the sidebar user-menu dropdown.</p>
+        </section>
+
+        <section id="statuses" class="manual-section mb-5">
+            <h2 class="fw-bold mb-3"><i class="bi bi-diagram-3 me-2 text-primary"></i>Status Reference</h2>
+
+            <h3 class="fw-bold mt-2">Tracked opportunity status</h3>
+            <div class="status-flow my-2">
+                <span class="badge bg-secondary">Watching</span>
+                <i class="bi bi-arrow-right"></i>
+                <span class="badge bg-primary">Preparing</span>
+                <i class="bi bi-arrow-right"></i>
+                <span class="badge bg-info text-dark">Approved</span>
+                <i class="bi bi-arrow-right"></i>
+                <span class="badge bg-warning text-dark">Applied</span>
+                <i class="bi bi-arrow-right"></i>
+                <span class="badge bg-success">Awarded</span>
+                <span class="text-muted mx-2">/</span>
+                <span class="badge bg-dark">Declined</span>
+            </div>
+
+            <h3 class="fw-bold mt-4">Federal opportunity status</h3>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+                            <tbody>
+                                <tr><td>Posted</td><td>Open and accepting applications.</td></tr>
+                                <tr><td>Closed</td><td>Past close date.</td></tr>
+                                <tr><td>Archived</td><td>Removed from Grants.gov.</td></tr>
+                                <tr><td>Forecasted</td><td>Anticipated; not yet posted.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="fw-bold mt-4">Match status</h3>
+            <div class="status-flow my-2">
+                <span class="badge bg-primary">New</span>
+                <i class="bi bi-arrow-right"></i>
+                <span class="badge bg-secondary">Viewed</span>
+                <i class="bi bi-arrow-right"></i>
+                <span class="badge bg-success">Saved</span>
+                <span class="text-muted mx-2">/</span>
+                <span class="badge bg-dark">Dismissed</span>
+            </div>
+        </section>
+
+        <section id="api" class="manual-section mb-5">
+            <h2 class="fw-bold mb-3"><i class="bi bi-code-slash me-2 text-primary"></i>Programmatic API</h2>
+            <p><code>/api/v1/</code> — DRF resource endpoints. Auth: per-user Bearer token (SHA-256 hashed; set on <code>BountyProfile</code>).</p>
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead><tr><th>Resource</th><th>Endpoint</th></tr></thead>
+                            <tbody>
+                                <tr><td>Federal opportunities (read)</td><td><code>/api/v1/opportunities/</code></td></tr>
+                                <tr><td>Tracked opportunities</td><td><code>/api/v1/tracked/</code></td></tr>
+                                <tr><td>Match preferences</td><td><code>/api/v1/preferences/</code></td></tr>
+                                <tr><td>Opportunity matches</td><td><code>/api/v1/matches/</code></td></tr>
+                                <tr><td>Helm feed (aggregate)</td><td><code>/api/v1/helm-feed/</code></td></tr>
+                                <tr><td>Helm feed (per-user inbox)</td><td><code>/api/v1/helm-feed/inbox/?user_sub=…</code></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <p class="mb-0 small text-muted">Pagination envelope: <code>{total, limit, offset, results}</code>. Default 50, max 200. OpenAPI schema at <code>/api/schema/</code>; Swagger UI at <code>/api/docs/</code>; ReDoc at <code>/api/redoc/</code>.</p>
+        </section>
+
+        <section id="shortcuts" class="manual-section mb-5">
+            <h2 class="fw-bold mb-3"><i class="bi bi-keyboard me-2 text-primary"></i>Keyboard Shortcuts</h2>
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <kbd>⌘K</kbd> <span class="text-muted">/</span> <kbd>Ctrl+K</kbd>
+                        <span>Open the suite-wide search modal.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-body text-center p-4">
+                <h5 class="fw-bold mb-2">Need a quick answer?</h5>
+                <p class="text-muted mb-3">The FAQ covers the most common questions in 13 short cards.</p>
+                <a href="{% url 'help' %}" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-question-circle me-1"></i> Help &amp; FAQ
+                </a>
+                <a href="mailto:info@docklabs.ai" class="btn btn-primary">
+                    <i class="bi bi-envelope me-1"></i> Contact Support
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+{% endblock %}

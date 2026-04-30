@@ -106,6 +106,9 @@
 <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-gear me-2"></i>{% trans "Admin" %}</a></li>
 <li><hr class="dropdown-divider"></li>
 {% endif %}
+<li><a class="dropdown-item" href="{% url 'help' %}"><i class="bi bi-question-circle me-2"></i>{% trans "Help & FAQ" %}</a></li>
+<li><a class="dropdown-item" href="{% url 'manual' %}"><i class="bi bi-book me-2"></i>{% trans "User Manual" %}</a></li>
+<li><hr class="dropdown-divider"></li>
 <li>
   <form method="post" action="{% url 'account_logout' %}">
     {% csrf_token %}
@@ -117,6 +120,7 @@
 {# === Topbar Customization === #}
 
 {% block notifications_url %}{% url 'keel_notifications:list' %}{% endblock %}
+{% block help_url %}{% url 'help' %}{% endblock %}
 
 {% block extra_js %}
 {{ block.super }}
