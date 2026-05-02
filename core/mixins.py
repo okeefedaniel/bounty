@@ -5,12 +5,22 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models.expressions import BaseExpression
 
 
+# Bounty role tiers. ``agency_admin`` is the customer-side admin: same
+# operational powers as ``admin`` here (Bounty has no IT-only surface
+# inside the product), but won't be able to grant other admin-tier roles
+# in Keel. Pinning the role lists in module-level frozensets keeps every
+# permission gate reading from one source of truth.
+ADMIN_ROLES = frozenset({'admin', 'agency_admin'})
+COORDINATOR_ROLES = ADMIN_ROLES | frozenset({'coordinator'})
+ANALYST_ROLES = COORDINATOR_ROLES | frozenset({'analyst'})
+
+
 class CoordinatorRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     """Restrict view to coordinators and admins."""
 
     def test_func(self):
         role = getattr(self.request.user, 'role', '')
-        return role in ('admin', 'coordinator')
+        return role in COORDINATOR_ROLES
 
 
 class AnalystRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -18,7 +28,7 @@ class AnalystRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
 
     def test_func(self):
         role = getattr(self.request.user, 'role', '')
-        return role in ('admin', 'coordinator', 'analyst')
+        return role in ANALYST_ROLES
 
 
 class SortableListMixin:
