@@ -63,6 +63,7 @@ urlpatterns = [
 
     # Notifications
     path('notifications/', include('keel.notifications.urls')),
+    path('settings/', include('keel.settings.urls')),
 
     # Feedback / change requests (beta testers + admins)
     path('feedback/', include('keel.requests.urls')),

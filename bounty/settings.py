@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'keel.requests',
     'keel.search',
     'keel.signatures',
+    'keel.settings',
     # Third party
     'rest_framework',
     'crispy_forms',
