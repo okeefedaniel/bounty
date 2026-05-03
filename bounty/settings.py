@@ -28,7 +28,14 @@ ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').sp
 RAILWAY_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
 if RAILWAY_DOMAIN:
     ALLOWED_HOSTS.append(RAILWAY_DOMAIN)
-    ALLOWED_HOSTS.append('.railway.app')
+    # Optional — only allow the *.railway.app wildcard when explicitly
+    # opted in. Previously this was unconditional, which let any
+    # railway.app subdomain (including third-party ones) pass the host
+    # header check, weakening defense-in-depth against host-header
+    # smuggling. Set RAILWAY_ALLOW_WILDCARD=1 to restore the old behavior
+    # (e.g. for Railway preview deploys).
+    if os.environ.get('RAILWAY_ALLOW_WILDCARD', '').lower() in ('true', '1', 'yes'):
+        ALLOWED_HOSTS.append('.railway.app')
 
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
 if RAILWAY_DOMAIN:

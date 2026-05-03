@@ -4,9 +4,27 @@ from django.db.models import Exists, OuterRef
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import ListView, UpdateView
+
+
+def _safe_next(request, fallback):
+    """Validate a user-supplied ``?next=`` URL to prevent open redirects.
+
+    Returns the next URL only if it points to the same host (or a relative
+    path); otherwise falls back to the default URL. Always rejects unsafe
+    schemes (e.g. ``javascript:``).
+    """
+    candidate = request.POST.get('next', '')
+    if candidate and url_has_allowed_host_and_scheme(
+        url=candidate,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return candidate
+    return fallback
 
 from core.mixins import CoordinatorRequiredMixin
 from core.models import get_bounty_profile
@@ -133,8 +151,7 @@ class DismissMatchView(LoginRequiredMixin, View):
         match.status = OpportunityMatch.Status.DISMISSED
         match.save(update_fields=['status', 'updated_at'])
         messages.info(request, _('Recommendation dismissed.'))
-        next_url = request.POST.get('next', '')
-        return redirect(next_url or reverse('matching:recommendations'))
+        return redirect(_safe_next(request, reverse('matching:recommendations')))
 
 
 class TrackAndDismissView(LoginRequiredMixin, View):
@@ -152,8 +169,7 @@ class TrackAndDismissView(LoginRequiredMixin, View):
         match.status = OpportunityMatch.Status.DISMISSED
         match.save(update_fields=['status', 'updated_at'])
         messages.success(request, _('Opportunity tracked and recommendation dismissed.'))
-        next_url = request.POST.get('next', '')
-        return redirect(next_url or reverse('matching:recommendations'))
+        return redirect(_safe_next(request, reverse('matching:recommendations')))
 
 
 class MatchFeedbackView(LoginRequiredMixin, View):
@@ -179,8 +195,7 @@ class MatchFeedbackView(LoginRequiredMixin, View):
             return JsonResponse({'status': 'ok', 'feedback': match.feedback})
 
         messages.success(request, _('Feedback recorded. Thank you!'))
-        next_url = request.POST.get('next', '')
-        return redirect(next_url or reverse('matching:recommendations'))
+        return redirect(_safe_next(request, reverse('matching:recommendations')))
 
 
 class StatePreferenceView(CoordinatorRequiredMixin, UpdateView):

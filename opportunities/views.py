@@ -4,9 +4,22 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Case, IntegerField, Q, Value, When
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import DetailView, FormView, ListView, UpdateView
+
+
+def _safe_next(request, fallback):
+    """Validate a user-supplied ``?next=`` URL to prevent open redirects."""
+    candidate = request.POST.get('next', '')
+    if candidate and url_has_allowed_host_and_scheme(
+        url=candidate,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        return candidate
+    return fallback
 
 from core.mixins import SortableListMixin
 from django.contrib.auth import get_user_model
@@ -256,8 +269,7 @@ class TrackOpportunityView(LoginRequiredMixin, View):
         else:
             messages.info(request, _('You are already tracking this opportunity.'))
 
-        next_url = request.POST.get('next', '')
-        return redirect(next_url or reverse('dashboard'))
+        return redirect(_safe_next(request, reverse('dashboard')))
 
 
 class ClaimOpportunityView(LoginRequiredMixin, View):
