@@ -1,13 +1,13 @@
-import base64
-import hashlib
 import logging
 
+from cryptography.fernet import InvalidToken
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from keel.core.models import AbstractAuditLog, AbstractNotification
 from keel.notifications.models import AbstractNotificationPreference, AbstractNotificationLog
+from keel.security import encryption
 
 logger = logging.getLogger(__name__)
 
@@ -37,28 +37,32 @@ class BountyProfile(models.Model):
     def __str__(self):
         return f"Profile: {self.user}"
 
-    @staticmethod
-    def _get_fernet():
-        from cryptography.fernet import Fernet
-        key = hashlib.sha256(settings.SECRET_KEY.encode()).digest()
-        return Fernet(base64.urlsafe_b64encode(key))
-
     def set_anthropic_api_key(self, raw_key):
+        """Encrypt ``raw_key`` under the active KEEL_ENCRYPTION_KEYS primary."""
         if not raw_key:
             self.anthropic_api_key = ''
             return
-        encrypted = self._get_fernet().encrypt(raw_key.encode()).decode()
-        self.anthropic_api_key = encrypted
+        self.anthropic_api_key = encryption.encrypt(raw_key)
 
     def get_anthropic_api_key(self):
+        """Decrypt under any configured key (for rotation overlap).
+
+        Tolerates ``InvalidToken`` so a stale ciphertext blocked by a
+        rotation gap returns an empty string instead of raising; the AI
+        scorer falls back to ``settings.ANTHROPIC_API_KEY`` in that case.
+        """
         if not self.anthropic_api_key:
             return ''
         try:
-            return self._get_fernet().decrypt(
-                self.anthropic_api_key.encode()
-            ).decode()
-        except Exception:
-            logger.warning('Failed to decrypt API key for user %s', self.user_id)
+            return encryption.decrypt(self.anthropic_api_key)
+        except InvalidToken:
+            logger.warning(
+                'Failed to decrypt anthropic_api_key for user %s — token is '
+                'not under any configured KEEL_ENCRYPTION_KEYS. If you just '
+                'rotated keys, set KEEL_ENCRYPTION_LEGACY_SECRET_KEY_FALLBACK=true '
+                'until you have run rotate_anthropic_keys.',
+                self.user_id,
+            )
             return ''
 
     @property
