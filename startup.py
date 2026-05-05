@@ -148,7 +148,12 @@ def main():
         run(f"{manage_cmd} ensure_superuser")
 
     # Demo mode: seed demo users
+    # seed_keel_users picks up new entries in PRODUCT_ROLES['bounty'] on every
+    # boot so role additions don't require a manual `railway ssh` reseed.
+    # Idempotent: uses update_or_create / get_or_create + set_unusable_password.
     if os.environ.get('DEMO_MODE', '').lower() in ('true', '1', 'yes'):
+        log("=== DEMO_MODE — seeding demo users (bounty scope) ===")
+        run(f"{manage_cmd} seed_keel_users --product bounty")
         run(f"{manage_cmd} seed_demo_users")
     if os.environ.get('SEED_ON_DEPLOY', '').lower() in ('true', '1', 'yes'):
         run(f"{manage_cmd} shell < seed_data.py")
