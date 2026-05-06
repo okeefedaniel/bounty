@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'keel.search',
     'keel.signatures',
     'keel.settings',
+    'keel.activity',  # Phase 1A Week 5 / Phase 1C — sixth product peer (Bounty)
     # Third party
     'rest_framework',
     'crispy_forms',
@@ -362,6 +363,18 @@ KEEL_AUDIT_LOG_MODEL = 'bounty_core.AuditLog'
 KEEL_NOTIFICATION_MODEL = 'bounty_core.Notification'
 KEEL_NOTIFICATION_PREFERENCE_MODEL = 'bounty_core.NotificationPreference'
 KEEL_NOTIFICATION_LOG_MODEL = 'bounty_core.NotificationLog'
+
+# keel.activity -- Phase 1A Week 5 / Phase 1C
+# Concrete Activity + Watcher live in opportunities/activity_models.py with
+# a denormalized `tracked_opportunity` FK for fast detail-page reads. Track A
+# promotion rules (OpportunityCollaborator / OpportunityAssignment /
+# OpportunityAttachment) register from OpportunitiesConfig.ready(). Track B
+# verbs (workflow.transitioned, signing.*) emit explicitly via
+# record_activity() from bounty's services.
+KEEL_ACTIVITY_MODEL = 'opportunities.Activity'
+KEEL_WATCHER_MODEL = 'opportunities.Watcher'
+KEEL_PRODUCT_BASE_URL = os.environ.get('KEEL_PRODUCT_BASE_URL', 'https://bounty.docklabs.ai')
+KEEL_FEED_USER_TOKEN_SECRET = os.environ.get('KEEL_FEED_USER_TOKEN_SECRET', '')
 KEEL_CSP_POLICY = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' https://keel.docklabs.ai https://demo-keel.docklabs.ai"
 from keel.core.fleet import FLEET as KEEL_FLEET_PRODUCTS  # noqa: E402,F401
 # Site

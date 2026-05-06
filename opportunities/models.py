@@ -323,3 +323,10 @@ class OpportunityAttachment(AbstractAttachment):
     class Meta(AbstractAttachment.Meta):
         verbose_name = _('Opportunity Attachment')
         verbose_name_plural = _('Opportunity Attachments')
+
+
+# ---------------------------------------------------------------------------
+# keel.activity concrete models -- re-exported for Django app discovery.
+# Definitions in activity_models.py to keep this file from growing further.
+# ---------------------------------------------------------------------------
+from .activity_models import Activity, Watcher  # noqa: E402, F401
