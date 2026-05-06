@@ -293,9 +293,7 @@
     {# -- Right Column (4 cols) -- #}
     <div class="col-lg-4">
 
-        {# keel.activity per-record feed -- collab.added/removed,
-           assignment changes, attachment uploads, and (once Track B
-           lands) status transitions + Manifest signing roundtrips. #}
+        {# keel.activity per-record feed -- visible per Activity.visible_to. #}
         {% activity_panel tracked limit=15 title="Activity" %}
 
         {# Quick Info Card #}
