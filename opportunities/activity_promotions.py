@@ -52,17 +52,21 @@ def _get_attachment(audit):
         return None
 
 
+# IMPORTANT: metadata_fn returns the metadata DICT ONLY (no model instances).
+# The keel.activity registry stores the return value as the Activity.metadata
+# JSONField, so any model instance in the returned dict will fail JSON encoding
+# at insert time. The denormalized tracked_opportunity FK on the Activity row
+# is populated by Activity.save() (in activity_models.py) from the target GFK
+# when target IS a TrackedOpportunity -- no need to pass it through metadata_fn.
+
 def _collab_added_kwargs(audit):
     collab = _get_collab(audit)
     if collab is None:
         return None
     return {
-        'tracked_opportunity': collab.tracked_opportunity,
-        'metadata': {
-            'role': collab.role,
-            'invited_email': collab.email or '',
-            'is_external_invite': bool(collab.email and not collab.user_id),
-        },
+        'role': collab.role,
+        'invited_email': collab.email or '',
+        'is_external_invite': bool(collab.email and not collab.user_id),
     }
 
 
@@ -71,13 +75,10 @@ def _assignment_added_kwargs(audit):
     if assignment is None:
         return None
     return {
-        'tracked_opportunity': assignment.tracked_opportunity,
-        'metadata': {
-            'assignment_id': str(assignment.pk),
-            'assigned_to': str(assignment.assigned_to_id) if assignment.assigned_to_id else '',
-            'status': getattr(assignment, 'status', ''),
-            'assignment_type': getattr(assignment, 'assignment_type', ''),
-        },
+        'assignment_id': str(assignment.pk),
+        'assigned_to': str(assignment.assigned_to_id) if assignment.assigned_to_id else '',
+        'status': getattr(assignment, 'status', ''),
+        'assignment_type': getattr(assignment, 'assignment_type', ''),
     }
 
 
@@ -86,12 +87,9 @@ def _attachment_uploaded_kwargs(audit):
     if attachment is None:
         return None
     return {
-        'tracked_opportunity': attachment.tracked_opportunity,
-        'metadata': {
-            'attachment_id': str(attachment.pk),
-            'filename': str(getattr(attachment, 'file', '')).split('/')[-1] or '(file)',
-            'visibility': getattr(attachment, 'visibility', ''),
-        },
+        'attachment_id': str(attachment.pk),
+        'filename': str(getattr(attachment, 'file', '')).split('/')[-1] or '(file)',
+        'visibility': getattr(attachment, 'visibility', ''),
     }
 
 
