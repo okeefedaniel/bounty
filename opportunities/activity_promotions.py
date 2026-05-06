@@ -115,7 +115,7 @@ def register_all() -> None:
         target_fn=lambda audit: _resolve_tracked_opportunity_from_changes(
             audit, 'tracked_opportunity_id', 'tracked_opportunity',
         ),
-        source_label_fn=lambda audit: f'{_actor_name(audit)} removed a collaborator',
+        source_label_fn=lambda audit: f'removed a collaborator',
         metadata_fn=lambda audit: {
             'role': (audit.changes or {}).get('role', ''),
         },
@@ -141,7 +141,7 @@ def register_all() -> None:
         target_fn=lambda audit: getattr(_get_attachment(audit), 'tracked_opportunity', None),
         action_fn=_get_attachment,
         deep_link_fn=lambda audit: _safe_get_url(getattr(_get_attachment(audit), 'tracked_opportunity', None)),
-        source_label_fn=lambda audit: f'{_actor_name(audit)} uploaded a file',
+        source_label_fn=lambda audit: f'uploaded a file',
         metadata_fn=_attachment_uploaded_kwargs,
     ))
 
@@ -159,23 +159,23 @@ def _actor_name(audit) -> str:
 def _collab_added_label(audit) -> str:
     collab = _get_collab(audit)
     if collab is None:
-        return f'{_actor_name(audit)} added a collaborator'
+        return f'added a collaborator'
     if collab.user_id and collab.user:
         invitee = collab.user.get_full_name() or collab.user.username
     else:
         invitee = collab.email or 'an invitee'
-    return f'{_actor_name(audit)} added {invitee} as {collab.get_role_display()}'
+    return f'added {invitee} as {collab.get_role_display()}'
 
 
 def _assignment_added_label(audit) -> str:
     assignment = _get_assignment(audit)
     if assignment is None:
-        return f'{_actor_name(audit)} updated an assignment'
+        return f'updated an assignment'
     if assignment.assigned_to_id and assignment.assigned_to:
         invitee = assignment.assigned_to.get_full_name() or assignment.assigned_to.username
     else:
         invitee = 'someone'
-    return f'{_actor_name(audit)} assigned {invitee} as principal driver'
+    return f'assigned {invitee} as principal driver'
 
 
 def _resolve_tracked_opportunity_from_changes(audit, *fk_keys):
