@@ -22,10 +22,11 @@ def build_preference_context(preference, state_preference=None):
     from matching.models import FocusArea
 
     user = preference.user
+    profile = getattr(user, 'bounty_profile', None)
     parts = []
     parts.append(f"Role: {user.get_role_display()}")
-    if user.organization_name:
-        parts.append(f"Organization: {user.organization_name}")
+    if profile and profile.organization_name:
+        parts.append(f"Organization: {profile.organization_name}")
 
     # Merge focus areas: state-wide + user-level
     all_focus_areas = set(preference.focus_areas or [])
@@ -94,7 +95,9 @@ def build_opportunity_summary(opportunity):
 
 def score_opportunity(preference, opportunity, state_preference=None):
     """Call the Claude API to score an opportunity against user preferences."""
-    api_key = preference.user.get_anthropic_api_key() or getattr(settings, 'ANTHROPIC_API_KEY', '')
+    profile = getattr(preference.user, 'bounty_profile', None)
+    user_key = profile.get_anthropic_api_key() if profile else ''
+    api_key = user_key or getattr(settings, 'ANTHROPIC_API_KEY', '')
     if not api_key:
         logger.warning('No API key for user %s — skipping AI scoring', preference.user)
         return None
@@ -154,7 +157,9 @@ def run_matching_for_user(user):
     from matching.models import MatchPreference, OpportunityMatch, StatePreference
     from opportunities.models import FederalOpportunity
 
-    if not getattr(user, 'anthropic_api_key', '') and not getattr(settings, 'ANTHROPIC_API_KEY', ''):
+    profile = getattr(user, 'bounty_profile', None)
+    user_key = profile.get_anthropic_api_key() if profile else ''
+    if not user_key and not getattr(settings, 'ANTHROPIC_API_KEY', ''):
         return {'scored': 0, 'stored': 0, 'notified': 0}
 
     min_score = getattr(settings, 'GRANT_MATCH_MIN_SCORE', 60)
