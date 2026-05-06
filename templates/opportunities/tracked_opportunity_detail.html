@@ -2,6 +2,7 @@
 {% load crispy_forms_tags %}
 {% load humanize %}
 {% load i18n %}
+{% load activity_tags %}
 
 {% block title %}{{ tracked.federal_opportunity.title|truncatewords:8 }}{% endblock %}
 
@@ -291,6 +292,11 @@
 
     {# -- Right Column (4 cols) -- #}
     <div class="col-lg-4">
+
+        {# keel.activity per-record feed -- collab.added/removed,
+           assignment changes, attachment uploads, and (once Track B
+           lands) status transitions + Manifest signing roundtrips. #}
+        {% activity_panel tracked limit=15 title="Activity" %}
 
         {# Quick Info Card #}
         <div class="card mb-4">
